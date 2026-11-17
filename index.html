@@ -1235,7 +1235,7 @@ $('draftBack').onclick=showLobby;$('again').onclick=()=>{if(NET.code){showLobby(
 const uOf=t=>units.find(U=>U.t===ME&&U.type===t);
 const dum=()=>units.find(U=>U.dummy);
 const clickSel=(t,txt)=>({txt:txt||`คลิกที่ <b>${NAMES[t]}</b>`,done:()=>sel===uOf(t)||!!uOf(t).order,show:()=>({tap:uOf(t)})});
-const pressSkill=t=>({txt:`กดปุ่ม <b>${SK_TH[t]}</b>`,done:()=>mode==='aim'||mode==='target'||!!uOf(t).order,show:()=>({btn:'#pop [data-a="skill"]'})});
+const pressSkill=t=>({txt:`กดปุ่ม <b>${SK_TH[t]}</b>`,done:()=>mode==='aim'||mode==='target'||mode==='mimic'||!!uOf(t).order,show:()=>({btn:'#pop [data-a="skill"]'})});
 const pressReady=txt=>({txt:(txt?txt+'<br>':'')+'กด <b>พร้อมแล้ว</b>',done:()=>false,show:()=>({btn:'#resolve'})});
 const hurt=()=>units.some(U=>U.dummy&&U.hp<STATS[U.type].hp);
 const TSTEPS=[
@@ -1278,6 +1278,21 @@ const TSTEPS=[
   check:()=>units.some(U=>U.dummy&&U.outer.style.display!=='none'),fail:'ยังไม่เห็นศัตรู — ใช้สแกนของหนู',
   subs:[{txt:'ศัตรูแอบใน <b>พุ่มหญ้า</b> เห็นแค่ <b>หมุด ?</b><br>คลิกที่ <b>หนู</b>',done:()=>sel===uOf('mouse')||!!uOf('mouse').order,show:()=>({tap:uOf('mouse'),ring:[5,10]})},
         pressSkill('mouse'),pressReady('คลื่นสแกนจะเจอศัตรูทุกตัวในรัศมี')]},
+ {title:'กบ · ตวัดลิ้น',okMsg:'ดึงมาแล้ว! ใช้ดึงศัตรูออกจากที่ซ่อน หรือดึงเข้าแนวยิงของเพื่อน',goal:[8,11],setup(){makeUnit(0,'frog',11,11,0);makeUnit(1,'owl',8,11,1).dummy=true},
+  check:()=>{const E=dum();return E&&E.r===10&&E.c===11},fail:'ยังดึงไม่โดน — ชี้ทิศไปที่หุ่นซ้อม',
+  subs:[clickSel('frog'),pressSkill('frog'),
+        {txt:'คลิกที่ <b>หุ่นซ้อม</b> เพื่อเลือกทิศตวัดลิ้น',done:()=>{const o=uOf('frog').order;return o&&o.type==='tongue'&&o.dr===-1&&o.dc===0},show:()=>({tap:[8,11]})},
+        pressReady('ลิ้นดึงตัวแรกในแนวเข้ามา 2 ช่อง (ศัตรูโดน 1 ดาเมจ)')]},
+ {title:'ลิง · สลับที่',okMsg:'แรดพุ่งผิดทาง! ลิงสลับที่ก่อนการโจมตีทุกอย่าง',goal:null,warn:true,setup(){makeUnit(0,'monkey',10,10,0);makeUnit(0,'lion',10,11,1);const E=makeUnit(1,'rhino',7,11,2);E.dummy=true;E.script={type:'charge',dr:1,dc:0}},
+  check:()=>{const L=uOf('lion'),M=uOf('monkey');return L&&L.hp===STATS.lion.hp&&M&&M.r===7&&M.c===11},fail:'สิงโตโดนชน — ให้ลิงสลับที่กับแรดศัตรู',
+  subs:[clickSel('monkey','<b>แรดศัตรูจะพุ่งชนสิงโต!</b> (แนวแดง)<br>คลิกที่ <b>ลิง</b>'),pressSkill('monkey'),
+        {txt:'คลิกที่ <b>แรดศัตรู</b> เพื่อสลับที่กับมัน',done:()=>{const o=uOf('monkey').order;return o&&o.type==='swap'},show:()=>({tap:dum()})},
+        pressReady('สลับได้ทั้งเพื่อนและศัตรูในระยะ 3 ช่อง — แรดจะพุ่งจากตำแหน่งใหม่')]},
+ {title:'นกแก้ว · ปลอมตัว',okMsg:'ปลอมแล้ว! เราเห็นป้าย 🎭 แต่ศัตรูเห็นเป็นสิงโต — ไว้ล่อให้ตีผิดตัว',goal:null,setup(){makeUnit(0,'parrot',10,10,0);makeUnit(1,'owl',7,10,1).dummy=true},
+  check:()=>!!uOf('parrot').guise,fail:'ยังไม่ได้ปลอมตัว',
+  subs:[clickSel('parrot'),pressSkill('parrot'),
+        {txt:'เลือก <b>🦁 สิงโต</b> — ศัตรูจะเห็นนกแก้วเป็นสิงโต',done:()=>{const o=uOf('parrot').order;return o&&o.type==='mimic'},show:()=>({btn:'#pop [data-g="lion"]'})},
+        pressReady('ปลอมได้แค่หน้าตา ใช้ท่าของตัวนั้นไม่ได้ · โดนตีเมื่อไหร่ความแตก')]},
  {title:'ปกป้องสิงโต!',okMsg:'รอดแล้ว! สิงโตยังอยู่ = ฝูงยังอยู่',goal:[10,8],warn:true,setup(){makeUnit(0,'lion',10,10,0);const E=makeUnit(1,'rhino',6,10,1);E.dummy=true;E.script={type:'charge',dr:1,dc:0}},
   check:()=>{const L=uOf('lion');return L&&L.alive&&L.hp===STATS.lion.hp},fail:'สิงโตโดนชน! ต้องหลบออกจากแนวแดง',
   subs:[{txt:'<b>แรดศัตรูจะพุ่งชนสิงโตของคุณ!</b> (แนวแดง)<br>ลาก <b>สิงโต</b> หลบไปช่องสีทอง',done:()=>{const o=uOf('lion').order;return o&&o.type==='move'&&o.c!==10},show:()=>({drag:[uOf('lion'),[10,8]]})},
