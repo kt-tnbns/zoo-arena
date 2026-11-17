@@ -1,7 +1,7 @@
 {
-  "name": "zoo-arena",
+  "name": "wildlife-arena",
   "version": "1.0.0",
-  "description": "4-player simultaneous-turn animal tactics on one board, LAN rooms",
+  "description": "2-4 player simultaneous-turn animal tactics in a forest arena (rooms, FFA / 2v2)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

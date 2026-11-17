@@ -3761,12 +3761,24 @@ var fs = require("fs");
 var path = require("path");
 var os = require("os");
 var { WebSocketServer } = require_ws();
+try {
+  process.loadEnvFile(path.join(__dirname, ".env"));
+} catch {
+}
 var PORT = process.env.PORT || 3e3;
 var PLAN_SECS = 40;
+var MAX_ROOMS = +process.env.MAX_ROOMS || 200;
+var MAX_CONN_PER_IP = +process.env.MAX_CONN_PER_IP || 12;
+var ROOMS_PER_IP_PER_MIN = +process.env.ROOMS_PER_IP_PER_MIN || 6;
+var MSG_RATE = 20;
+var MSG_BURST = 40;
 var RESOLVE_TIMEOUT = 25e3;
+var DRAFT_SECS = 30;
 var POOL = ["rhino", "owl", "chameleon", "turtle", "mouse"];
 var SEAT_ORDER = [0, 2, 1, 3];
-var activeSeats = (room) => SEAT_ORDER.slice(0, room.size).sort();
+var activeSeats = (room) => SEAT_ORDER.slice(0, room.cfg.size).sort();
+var DEF_CFG = () => ({ size: 4, mode: "ffa", team: 4, dup: 2, limit: 2, rounds: 8, public: true });
+var CFG_OK = { size: [2, 3, 4], mode: ["ffa", "team"], team: [3, 4, 5, 6], dup: [1, 2, 3, 9], limit: [1, 2, 3, 9], rounds: [5, 8, 12, 20, 0], public: [true, false] };
 function lanIP() {
   for (const ifaces of Object.values(os.networkInterfaces())) {
     for (const i of ifaces || []) if (i.family === "IPv4" && !i.internal) return i.address;
@@ -3774,11 +3786,27 @@ function lanIP() {
   return null;
 }
 var INDEX = path.join(__dirname, "index.html");
+var attr = (v) => String(v).replace(/[&"<>]/g, (c) => ({ "&": "&amp;", '"': "&quot;", "<": "&lt;", ">": "&gt;" })[c]);
+function analyticsTags() {
+  const base = (process.env.ANALYTICS_URL || "").replace(/\/+$/, ""), id = process.env.ANALYTICS_WEBSITE_ID || "";
+  if (!base || !id) return "";
+  const tag = (file) => `<script defer src="${attr(base + "/" + file)}" data-website-id="${attr(id)}"></script>`;
+  let out = tag(process.env.ANALYTICS_SCRIPT || "script.js");
+  if (/^(1|true|yes|on)$/i.test(process.env.ANALYTICS_RECORDER || "")) out += "\n" + tag(process.env.ANALYTICS_RECORDER_SCRIPT || "recorder.js");
+  return out;
+}
+var ANALYTICS = analyticsTags();
 var server = http.createServer((req, res) => {
-  res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
-  fs.createReadStream(INDEX).pipe(res);
+  fs.readFile(INDEX, "utf8", (err, html) => {
+    if (err) {
+      res.writeHead(500);
+      return res.end("index.html not found");
+    }
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
+    res.end(html.replace("<!--ANALYTICS-->", ANALYTICS));
+  });
 });
-var wss = new WebSocketServer({ server });
+var wss = new WebSocketServer({ server, maxPayload: 16 * 1024 });
 var rooms = /* @__PURE__ */ new Map();
 var nextId = 1;
 var CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -3790,27 +3818,34 @@ function makeCode() {
   } while (rooms.has(c));
   return c;
 }
-function randomPicks() {
+function randomPicks(cfg) {
   const n = {}, o = [];
-  while (o.length < 3) {
+  while (o.length < cfg.team - 1) {
     const t = POOL[Math.random() * POOL.length | 0];
-    if ((n[t] || 0) < 2) {
+    if ((n[t] || 0) < cfg.dup) {
       n[t] = (n[t] || 0) + 1;
       o.push(t);
     }
   }
   return o;
 }
-function validPicks(p) {
-  if (!Array.isArray(p) || p.length !== 3) return null;
+function validPicks(p, cfg) {
+  if (!Array.isArray(p) || p.length !== cfg.team - 1) return null;
   const n = {};
   for (const t of p) {
     if (!POOL.includes(t)) return null;
     n[t] = (n[t] || 0) + 1;
-    if (n[t] > 2) return null;
+    if (n[t] > cfg.dup) return null;
   }
   return p.slice();
 }
+var AVS = ["\u{1F981}", "\u{1F98F}", "\u{1F989}", "\u{1F98E}", "\u{1F422}", "\u{1F42D}", "\u{1F42F}", "\u{1F98A}", "\u{1F43C}", "\u{1F438}", "\u{1F43A}", "\u{1F99C}"];
+var cleanName = (n) => String(n || "\u0E1C\u0E39\u0E49\u0E40\u0E25\u0E48\u0E19").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 12) || "\u0E1C\u0E39\u0E49\u0E40\u0E25\u0E48\u0E19";
+var cleanAv = (a) => AVS.includes(a) ? a : "\u{1F981}";
+var sysChat = (room, text) => broadcast(room, { t: "chat", sys: true, text });
+var ipOf = (req) => String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
+var connPerIp = /* @__PURE__ */ new Map();
+var createLog = /* @__PURE__ */ new Map();
 var send = (ws, m) => {
   if (ws.readyState === 1) ws.send(JSON.stringify(m));
 };
@@ -3823,14 +3858,46 @@ function roomInfo(room) {
     t: "room",
     code: room.code,
     phase: room.phase,
-    size: room.size,
-    limit: room.limit,
-    rounds: room.rounds,
-    players: [...room.players].map(([id, p]) => ({ id, name: p.name, seat: p.seat, host: id === room.host, picked: !!p.picks }))
+    cfg: room.cfg,
+    name: room.name,
+    players: [...room.players].map(([id, p]) => ({ id, name: p.name, av: p.av, seat: p.seat, host: id === room.host, picked: !!p.picks, ready: !!p.ready }))
   };
 }
 var humanSeats = (room) => [...room.players.values()].map((p) => p.seat).filter((s) => room.seats && room.seats[s] && room.seats[s].human);
 var botSeats = (room) => room.seats ? room.seats.map((s, i) => !s.human && s.active ? i : -1).filter((i) => i >= 0) : [];
+function checkLobbyReady(room) {
+  if (room.phase !== "lobby" || !room.players.size) return;
+  if ([...room.players.values()].every((p) => p.ready)) beginDraft(room);
+}
+function beginDraft(room) {
+  room.phase = "draft";
+  for (const p of room.players.values()) if (p.picks && !validPicks(p.picks, room.cfg)) p.picks = null;
+  for (const p of room.players.values()) p.picked = false;
+  broadcast(room, roomInfo(room));
+  broadcast(room, { t: "draft", secs: DRAFT_SECS, cfg: room.cfg });
+  clearTimeout(room.timer);
+  room.timer = setTimeout(() => startGame(room), DRAFT_SECS * 1e3 + 800);
+}
+function checkDraft(room) {
+  if (room.phase === "draft" && [...room.players.values()].every((p) => p.picked)) startGame(room);
+}
+function startGame(room) {
+  if (room.phase !== "draft") return;
+  clearTimeout(room.timer);
+  const bySeat = {};
+  for (const p of room.players.values()) {
+    bySeat[p.seat] = p;
+    p.ready = false;
+  }
+  const act = activeSeats(room);
+  room.seats = [0, 1, 2, 3].map((s) => !act.includes(s) ? { name: "-", human: false, active: false, picks: [] } : bySeat[s] ? { name: bySeat[s].name, human: true, active: true, picks: bySeat[s].picks || randomPicks(room.cfg) } : { name: "\u0E1A\u0E2D\u0E17", human: false, active: true, picks: randomPicks(room.cfg) });
+  room.round = 1;
+  room.phase = "starting";
+  broadcast(room, { t: "start", seats: room.seats, cfg: room.cfg });
+  room.timer = setTimeout(() => {
+    if (rooms.get(room.code) === room) beginPlan(room);
+  }, 300);
+}
 function beginPlan(room) {
   room.phase = "plan";
   room.orders = {};
@@ -3868,13 +3935,26 @@ function afterResolve(room) {
   if (room.over) {
     room.phase = "lobby";
     room.seats = null;
+    for (const p of room.players.values()) p.ready = false;
     broadcast(room, roomInfo(room));
     return;
   }
   room.round++;
   beginPlan(room);
 }
-wss.on("connection", (ws) => {
+wss.on("connection", (ws, req) => {
+  const clientIp = ipOf(req);
+  if ((connPerIp.get(clientIp) || 0) >= MAX_CONN_PER_IP) {
+    ws.close(1013, "too many connections");
+    return;
+  }
+  connPerIp.set(clientIp, (connPerIp.get(clientIp) || 0) + 1);
+  ws.on("close", () => {
+    const n = (connPerIp.get(clientIp) || 1) - 1;
+    if (n > 0) connPerIp.set(clientIp, n);
+    else connPerIp.delete(clientIp);
+  });
+  let tokens = MSG_BURST, last = Date.now(), strikes = 0;
   const id = nextId++;
   ws.alive = true;
   ws.on("pong", () => {
@@ -3884,6 +3964,14 @@ wss.on("connection", (ws) => {
   });
   let code = null;
   ws.on("message", (data) => {
+    const now = Date.now();
+    tokens = Math.min(MSG_BURST, tokens + (now - last) / 1e3 * MSG_RATE);
+    last = now;
+    if (tokens < 1) {
+      if (++strikes > 200) ws.close(1008, "rate limit");
+      return;
+    }
+    tokens -= 1;
     let m;
     try {
       m = JSON.parse(data);
@@ -3894,17 +3982,58 @@ wss.on("connection", (ws) => {
     const room = code ? rooms.get(code) : null;
     const me = room && room.players.get(id);
     switch (m.t) {
+      case "list": {
+        const list = [];
+        for (const r of rooms.values()) {
+          if (!r.cfg.public) continue;
+          const playing = r.phase !== "lobby";
+          if (!playing && r.players.size >= r.cfg.size) continue;
+          list.push({
+            code: r.code,
+            name: r.name,
+            players: r.players.size,
+            size: r.cfg.size,
+            mode: r.cfg.mode,
+            team: r.cfg.team,
+            limit: r.cfg.limit,
+            rounds: r.cfg.rounds,
+            avs: [...r.players.values()].map((p) => p.av),
+            playing,
+            round: r.round
+          });
+        }
+        list.sort((a, b) => a.playing - b.playing || b.players - a.players);
+        send(ws, { t: "rooms", rooms: list.slice(0, 50), online: wss.clients.size, total: rooms.size });
+        break;
+      }
       case "create": {
         if (code) return;
+        if (rooms.size >= MAX_ROOMS) return send(ws, { t: "err", msg: "server \u0E40\u0E15\u0E47\u0E21 \u0E25\u0E2D\u0E07\u0E43\u0E2B\u0E21\u0E48\u0E2D\u0E35\u0E01\u0E2A\u0E31\u0E01\u0E04\u0E23\u0E39\u0E48" });
+        const recent = (createLog.get(clientIp) || []).filter((t) => Date.now() - t < 6e4);
+        if (recent.length >= ROOMS_PER_IP_PER_MIN) return send(ws, { t: "err", msg: "\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E2B\u0E49\u0E2D\u0E07\u0E16\u0E35\u0E48\u0E40\u0E01\u0E34\u0E19\u0E44\u0E1B \u0E23\u0E2D\u0E2A\u0E31\u0E01\u0E19\u0E32\u0E17\u0E35" });
+        recent.push(Date.now());
+        createLog.set(clientIp, recent);
         code = makeCode();
-        const r = { code, host: id, phase: "lobby", round: 1, size: 4, limit: 2, rounds: 8, seats: null, players: /* @__PURE__ */ new Map(), timer: null };
-        r.players.set(id, { ws, name: String(m.name || "\u0E1C\u0E39\u0E49\u0E40\u0E25\u0E48\u0E19").slice(0, 12), seat: 0, picks: null });
+        const r = { code, host: id, phase: "lobby", round: 1, cfg: DEF_CFG(), seats: null, players: /* @__PURE__ */ new Map(), timer: null };
+        r.players.set(id, { ws, name: cleanName(m.name), av: cleanAv(m.av), seat: 0, picks: null });
+        r.name = `\u0E2B\u0E49\u0E2D\u0E07\u0E02\u0E2D\u0E07 ${cleanName(m.name)}`;
         rooms.set(code, r);
         const ip = lanIP();
         send(ws, { t: "hello", id, code, lan: ip ? `http://${ip}:${PORT}` : null });
         broadcast(r, roomInfo(r));
         break;
       }
+      case "quick": {
+        if (code) return;
+        let best = null;
+        for (const r of rooms.values()) if (r.phase === "lobby" && r.cfg.public && r.players.size < r.cfg.size && (!best || r.players.size > best.players.size)) best = r;
+        if (!best) {
+          m.t = "create";
+          return ws.emit("message", JSON.stringify(m));
+        }
+        m.code = best.code;
+      }
+      // falls through to join
       case "join": {
         if (code) return;
         const want = String(m.code || "").toUpperCase().trim();
@@ -3912,10 +4041,11 @@ wss.on("connection", (ws) => {
         if (!r) return send(ws, { t: "err", msg: "\u0E44\u0E21\u0E48\u0E1E\u0E1A\u0E2B\u0E49\u0E2D\u0E07\u0E19\u0E35\u0E49" });
         if (r.phase !== "lobby") return send(ws, { t: "err", msg: "\u0E2B\u0E49\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E01\u0E33\u0E25\u0E31\u0E07\u0E40\u0E25\u0E48\u0E19\u0E2D\u0E22\u0E39\u0E48" });
         const used = new Set([...r.players.values()].map((p) => p.seat));
-        const seat = SEAT_ORDER.slice(0, r.size).find((s) => !used.has(s));
-        if (seat === void 0) return send(ws, { t: "err", msg: `\u0E2B\u0E49\u0E2D\u0E07\u0E40\u0E15\u0E47\u0E21\u0E41\u0E25\u0E49\u0E27 (${r.size} \u0E04\u0E19)` });
+        const seat = SEAT_ORDER.slice(0, r.cfg.size).find((s) => !used.has(s));
+        if (seat === void 0) return send(ws, { t: "err", msg: `\u0E2B\u0E49\u0E2D\u0E07\u0E40\u0E15\u0E47\u0E21\u0E41\u0E25\u0E49\u0E27 (${r.cfg.size} \u0E04\u0E19)` });
         code = want;
-        r.players.set(id, { ws, name: String(m.name || "\u0E1C\u0E39\u0E49\u0E40\u0E25\u0E48\u0E19").slice(0, 12), seat, picks: null });
+        r.players.set(id, { ws, name: cleanName(m.name), av: cleanAv(m.av), seat, picks: null });
+        sysChat(r, `${cleanName(m.name)} \u0E40\u0E02\u0E49\u0E32\u0E2B\u0E49\u0E2D\u0E07`);
         const ip = lanIP();
         send(ws, { t: "hello", id, code, lan: ip ? `http://${ip}:${PORT}` : null });
         broadcast(r, roomInfo(r));
@@ -3923,41 +4053,78 @@ wss.on("connection", (ws) => {
       }
       case "cfg": {
         if (!room || room.host !== id || room.phase !== "lobby") return;
-        if (m.rounds !== void 0) {
-          room.rounds = [5, 8, 12, 20].includes(m.rounds | 0) ? m.rounds | 0 : 8;
-          broadcast(room, roomInfo(room));
-          break;
-        }
-        if (m.limit !== void 0) {
-          room.limit = [1, 2, 3, 9].includes(m.limit | 0) ? m.limit | 0 : 2;
-          broadcast(room, roomInfo(room));
-          break;
-        }
-        const size = [2, 3, 4].includes(m.size | 0) ? m.size | 0 : 4;
-        const act = SEAT_ORDER.slice(0, size);
+        const k = String(m.k), v = m.v;
+        if (!CFG_OK[k] || !CFG_OK[k].includes(v)) return;
+        const c = { ...room.cfg, [k]: v };
+        if (k === "mode" && v === "team") c.size = 4;
+        if (k === "size" && v !== 4 && c.mode === "team") c.mode = "ffa";
+        const act = SEAT_ORDER.slice(0, c.size);
         if ([...room.players.values()].some((p) => !act.includes(p.seat))) return send(ws, { t: "err", msg: "\u0E21\u0E35\u0E1C\u0E39\u0E49\u0E40\u0E25\u0E48\u0E19\u0E21\u0E32\u0E01\u0E01\u0E27\u0E48\u0E32\u0E08\u0E33\u0E19\u0E27\u0E19\u0E1D\u0E39\u0E07\u0E17\u0E35\u0E48\u0E40\u0E25\u0E37\u0E2D\u0E01" });
-        room.size = size;
+        room.cfg = c;
+        for (const p of room.players.values()) p.ready = false;
+        if (k === "team" || k === "dup") {
+          for (const p of room.players.values()) if (p.picks && !validPicks(p.picks, c)) p.picks = null;
+        }
         broadcast(room, roomInfo(room));
         break;
       }
+      case "profile": {
+        if (!me) return;
+        me.name = cleanName(m.name);
+        me.av = cleanAv(m.av);
+        if (room.phase === "lobby") broadcast(room, roomInfo(room));
+        break;
+      }
+      case "rname": {
+        if (!room || room.host !== id) return;
+        room.name = String(m.name || "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 24) || room.name;
+        broadcast(room, roomInfo(room));
+        break;
+      }
+      case "chat": {
+        if (!me) return;
+        const now2 = Date.now();
+        if (now2 - (me.lastChat || 0) < 700) return;
+        me.lastChat = now2;
+        const text = String(m.text || "").replace(/[\u0000-\u001f]/g, "").trim().slice(0, 120);
+        if (text) broadcast(room, { t: "chat", id, name: me.name, av: me.av, seat: me.seat, text });
+        break;
+      }
+      case "kick": {
+        if (!room || room.host !== id || room.phase !== "lobby") return;
+        const tgt = room.players.get(m.id | 0);
+        if (!tgt || (m.id | 0) === id) return;
+        send(tgt.ws, { t: "kicked" });
+        setTimeout(() => tgt.ws.close(4001, "kicked"), 50);
+        break;
+      }
       case "picks": {
+        if (!me || room.phase !== "lobby" && room.phase !== "draft") return;
+        me.picks = validPicks(m.picks, room.cfg);
+        if (room.phase === "draft" && me.picks) me.picked = true;
+        broadcast(room, roomInfo(room));
+        checkDraft(room);
+        break;
+      }
+      case "lready": {
         if (!me || room.phase !== "lobby") return;
-        me.picks = validPicks(m.picks);
+        me.ready = !!m.v;
+        broadcast(room, roomInfo(room));
+        checkLobbyReady(room);
+        break;
+      }
+      case "seat": {
+        if (!me || room.phase !== "lobby") return;
+        const want = m.seat | 0, act = activeSeats(room);
+        if (!act.includes(want) || [...room.players.values()].some((p) => p.seat === want)) return;
+        me.seat = want;
+        me.ready = false;
         broadcast(room, roomInfo(room));
         break;
       }
       case "start": {
         if (!room || room.host !== id || room.phase !== "lobby") return;
-        const bySeat = {};
-        for (const p of room.players.values()) bySeat[p.seat] = p;
-        const act = activeSeats(room);
-        room.seats = [0, 1, 2, 3].map((s) => !act.includes(s) ? { name: "-", human: false, active: false, picks: [] } : bySeat[s] ? { name: bySeat[s].name, human: true, active: true, picks: bySeat[s].picks || randomPicks() } : { name: "\u0E1A\u0E2D\u0E17", human: false, active: true, picks: randomPicks() });
-        room.round = 1;
-        room.phase = "starting";
-        broadcast(room, { t: "start", seats: room.seats, limit: room.limit, rounds: room.rounds });
-        setTimeout(() => {
-          if (rooms.get(code) === room) beginPlan(room);
-        }, 300);
+        beginDraft(room);
         break;
       }
       case "orders": {
@@ -4001,6 +4168,7 @@ wss.on("connection", (ws) => {
       return;
     }
     if (room.host === id) room.host = room.players.keys().next().value;
+    if (p && room.phase === "lobby") sysChat(room, `${p.name} \u0E2D\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E2B\u0E49\u0E2D\u0E07`);
     if (room.seats && p) {
       room.seats[p.seat].human = false;
       broadcast(room, { t: "seatBot", seat: p.seat, name: p.name });
@@ -4009,8 +4177,13 @@ wss.on("connection", (ws) => {
     broadcast(room, roomInfo(room));
     if (room.phase === "plan") readyState(room);
     if (room.phase === "resolve") checkDone(room);
+    if (room.phase === "lobby") checkLobbyReady(room);
+    if (room.phase === "draft") checkDraft(room);
   });
 });
+setInterval(() => {
+  for (const [k, v] of createLog) if (!v.some((t) => Date.now() - t < 6e4)) createLog.delete(k);
+}, 6e4);
 setInterval(() => {
   for (const ws of wss.clients) {
     if (!ws.alive) {
@@ -4026,8 +4199,9 @@ setInterval(() => {
 }, 15e3);
 process.on("uncaughtException", (e) => console.error("error:", e && e.message));
 server.listen(PORT, () => {
-  console.log("Zoo Arena");
+  console.log("Wildlife Arena");
   console.log("  Local:    http://localhost:" + PORT);
   const ip = lanIP();
   if (ip) console.log("  Network:  http://" + ip + ":" + PORT + "   <- share this on your Wi-Fi (LAN mode)");
+  console.log("  Analytics: " + (ANALYTICS ? process.env.ANALYTICS_URL + (/recorder/.test(ANALYTICS) ? " (+ recorder)" : "") : "off"));
 });
