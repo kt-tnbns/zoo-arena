@@ -3774,11 +3774,11 @@ var MSG_RATE = 20;
 var MSG_BURST = 40;
 var RESOLVE_TIMEOUT = 25e3;
 var DRAFT_SECS = 30;
-var POOL = ["rhino", "owl", "chameleon", "turtle", "mouse"];
+var POOL = ["rhino", "owl", "chameleon", "turtle", "mouse", "monkey", "frog", "parrot"];
 var SEAT_ORDER = [0, 2, 1, 3];
 var activeSeats = (room) => SEAT_ORDER.slice(0, room.cfg.size).sort();
-var DEF_CFG = () => ({ size: 4, mode: "ffa", team: 4, dup: 2, limit: 2, rounds: 8, public: true });
-var CFG_OK = { size: [2, 3, 4], mode: ["ffa", "team"], team: [3, 4, 5, 6], dup: [1, 2, 3, 9], limit: [1, 2, 3, 9], rounds: [5, 8, 12, 20, 0], public: [true, false] };
+var DEF_CFG = () => ({ size: 4, mode: "ffa", team: 4, dup: 2, limit: 2, rounds: 8, public: true, map: "classic", items: "few" });
+var CFG_OK = { size: [2, 3, 4], mode: ["ffa", "team"], team: [3, 4, 5, 6], dup: [1, 2, 3, 9], limit: [1, 2, 3, 9], rounds: [5, 8, 12, 20, 0], public: [true, false], map: ["classic", "open", "rocks", "jungle", "random"], items: ["off", "few", "many"] };
 function lanIP() {
   for (const ifaces of Object.values(os.networkInterfaces())) {
     for (const i of ifaces || []) if (i.family === "IPv4" && !i.internal) return i.address;
@@ -3852,7 +3852,31 @@ var send = (ws, m) => {
 var broadcast = (room, m) => {
   const s = JSON.stringify(m);
   for (const p of room.players.values()) if (p.ws.readyState === 1) p.ws.send(s);
+  for (const p of room.specs.values()) if (p.ws.readyState === 1) p.ws.send(s);
 };
+var cleanTok = (t) => String(t || "").replace(/[^a-z0-9]/gi, "").slice(0, 40);
+var inGame = (room) => !!room.seats && ["starting", "plan", "resolve"].includes(room.phase);
+function sendSync(ws, room, spec) {
+  send(ws, {
+    t: "sync",
+    spec: !!spec,
+    seats: room.seats,
+    cfg: room.cfg,
+    seed: room.seed,
+    history: room.history,
+    round: room.round,
+    phase: room.phase,
+    secs: Math.max(1, Math.round(((room.planEnd || 0) - Date.now()) / 1e3))
+  });
+}
+function dropRoom(room) {
+  clearTimeout(room.timer);
+  clearTimeout(room.emptyTimer);
+  for (const p of room.specs.values()) {
+    send(p.ws, { t: "roomGone" });
+  }
+  rooms.delete(room.code);
+}
 function roomInfo(room) {
   return {
     t: "room",
@@ -3892,8 +3916,11 @@ function startGame(room) {
   const act = activeSeats(room);
   room.seats = [0, 1, 2, 3].map((s) => !act.includes(s) ? { name: "-", human: false, active: false, picks: [] } : bySeat[s] ? { name: bySeat[s].name, human: true, active: true, picks: bySeat[s].picks || randomPicks(room.cfg) } : { name: "\u0E1A\u0E2D\u0E17", human: false, active: true, picks: randomPicks(room.cfg) });
   room.round = 1;
+  room.history = [];
+  room.gone = {};
+  room.seed = Math.random() * 2147483647 | 0;
   room.phase = "starting";
-  broadcast(room, { t: "start", seats: room.seats, cfg: room.cfg });
+  broadcast(room, { t: "start", seats: room.seats, cfg: room.cfg, seed: room.seed });
   room.timer = setTimeout(() => {
     if (rooms.get(room.code) === room) beginPlan(room);
   }, 300);
@@ -3905,6 +3932,7 @@ function beginPlan(room) {
   room.botsIn = botSeats(room).length === 0;
   broadcast(room, { t: "plan", round: room.round, secs: PLAN_SECS, bots: botSeats(room) });
   clearTimeout(room.timer);
+  room.planEnd = Date.now() + PLAN_SECS * 1e3;
   room.timer = setTimeout(() => resolveNow(room), PLAN_SECS * 1e3 + 800);
   readyState(room);
 }
@@ -3920,6 +3948,7 @@ function resolveNow(room) {
   room.done = /* @__PURE__ */ new Set();
   room.hashes = {};
   room.over = false;
+  room.history.push(room.orders);
   broadcast(room, { t: "resolve", round: room.round, orders: room.orders });
   room.timer = setTimeout(() => afterResolve(room), RESOLVE_TIMEOUT);
 }
@@ -3935,6 +3964,9 @@ function afterResolve(room) {
   if (room.over) {
     room.phase = "lobby";
     room.seats = null;
+    room.history = [];
+    room.gone = {};
+    room.specs.clear();
     for (const p of room.players.values()) p.ready = false;
     broadcast(room, roomInfo(room));
     return;
@@ -3962,7 +3994,7 @@ wss.on("connection", (ws, req) => {
   });
   ws.on("error", () => {
   });
-  let code = null;
+  let code = null, isSpec = false;
   ws.on("message", (data) => {
     const now = Date.now();
     tokens = Math.min(MSG_BURST, tokens + (now - last) / 1e3 * MSG_RATE);
@@ -3999,7 +4031,10 @@ wss.on("connection", (ws, req) => {
             rounds: r.cfg.rounds,
             avs: [...r.players.values()].map((p) => p.av),
             playing,
-            round: r.round
+            round: r.round,
+            watch: inGame(r),
+            map: r.cfg.map,
+            items: r.cfg.items
           });
         }
         list.sort((a, b) => a.playing - b.playing || b.players - a.players);
@@ -4014,8 +4049,8 @@ wss.on("connection", (ws, req) => {
         recent.push(Date.now());
         createLog.set(clientIp, recent);
         code = makeCode();
-        const r = { code, host: id, phase: "lobby", round: 1, cfg: DEF_CFG(), seats: null, players: /* @__PURE__ */ new Map(), timer: null };
-        r.players.set(id, { ws, name: cleanName(m.name), av: cleanAv(m.av), seat: 0, picks: null });
+        const r = { code, host: id, phase: "lobby", round: 1, cfg: DEF_CFG(), seats: null, players: /* @__PURE__ */ new Map(), specs: /* @__PURE__ */ new Map(), history: [], gone: {}, timer: null };
+        r.players.set(id, { ws, name: cleanName(m.name), av: cleanAv(m.av), seat: 0, picks: null, tok: cleanTok(m.tok) });
         r.name = `\u0E2B\u0E49\u0E2D\u0E07\u0E02\u0E2D\u0E07 ${cleanName(m.name)}`;
         rooms.set(code, r);
         const ip = lanIP();
@@ -4044,11 +4079,56 @@ wss.on("connection", (ws, req) => {
         const seat = SEAT_ORDER.slice(0, r.cfg.size).find((s) => !used.has(s));
         if (seat === void 0) return send(ws, { t: "err", msg: `\u0E2B\u0E49\u0E2D\u0E07\u0E40\u0E15\u0E47\u0E21\u0E41\u0E25\u0E49\u0E27 (${r.cfg.size} \u0E04\u0E19)` });
         code = want;
-        r.players.set(id, { ws, name: cleanName(m.name), av: cleanAv(m.av), seat, picks: null });
+        r.players.set(id, { ws, name: cleanName(m.name), av: cleanAv(m.av), seat, picks: null, tok: cleanTok(m.tok) });
         sysChat(r, `${cleanName(m.name)} \u0E40\u0E02\u0E49\u0E32\u0E2B\u0E49\u0E2D\u0E07`);
         const ip = lanIP();
         send(ws, { t: "hello", id, code, lan: ip ? `http://${ip}:${PORT}` : null });
         broadcast(r, roomInfo(r));
+        break;
+      }
+      case "watch": {
+        if (code) return;
+        const want = String(m.code || "").toUpperCase().trim(), r = rooms.get(want);
+        if (!r) return send(ws, { t: "err", msg: "\u0E44\u0E21\u0E48\u0E1E\u0E1A\u0E2B\u0E49\u0E2D\u0E07\u0E19\u0E35\u0E49" });
+        if (!inGame(r)) return send(ws, { t: "err", msg: "\u0E2B\u0E49\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E40\u0E23\u0E34\u0E48\u0E21\u0E40\u0E25\u0E48\u0E19" });
+        if (r.specs.size >= 8) return send(ws, { t: "err", msg: "\u0E04\u0E19\u0E14\u0E39\u0E40\u0E15\u0E47\u0E21\u0E41\u0E25\u0E49\u0E27" });
+        code = want;
+        isSpec = true;
+        r.specs.set(id, { ws, name: cleanName(m.name) });
+        send(ws, { t: "hello", id, code, spec: true });
+        sendSync(ws, r, true);
+        broadcast(r, { t: "note", text: `\u{1F441} ${cleanName(m.name)} \u0E40\u0E02\u0E49\u0E32\u0E21\u0E32\u0E14\u0E39\u0E40\u0E01\u0E21` });
+        break;
+      }
+      case "rejoin": {
+        if (code) return;
+        const want = String(m.code || "").toUpperCase().trim(), r = rooms.get(want), tok = cleanTok(m.tok);
+        const g = r && tok && r.gone[tok];
+        if (!g || !inGame(r)) return send(ws, { t: "norejoin" });
+        code = want;
+        delete r.gone[tok];
+        clearTimeout(r.emptyTimer);
+        r.players.set(id, { ws, name: g.name, av: g.av, seat: g.seat, picks: null, tok });
+        if (!r.players.has(r.host)) r.host = id;
+        r.seats[g.seat].human = true;
+        send(ws, { t: "hello", id, code });
+        broadcast(r, roomInfo(r));
+        broadcast(r, { t: "seatBack", seat: g.seat, name: g.name });
+        sendSync(ws, r, false);
+        if (r.phase === "plan") {
+          r.ready.delete(g.seat);
+          readyState(r);
+        }
+        break;
+      }
+      case "emote": {
+        if (!me || !inGame(room)) return;
+        const now2 = Date.now();
+        if (now2 - (me.lastEmote || 0) < 1200) return;
+        me.lastEmote = now2;
+        const e = m.e | 0;
+        if (e < 0 || e > 7) return;
+        broadcast(room, { t: "emote", seat: me.seat, e });
         break;
       }
       case "cfg": {
@@ -4160,11 +4240,24 @@ wss.on("connection", (ws, req) => {
     if (!code) return;
     const room = rooms.get(code);
     if (!room) return;
+    if (isSpec) {
+      room.specs.delete(id);
+      return;
+    }
     const p = room.players.get(id);
+    if (!p) return;
     room.players.delete(id);
+    if (inGame(room) && p.tok) room.gone[p.tok] = { seat: p.seat, name: p.name, av: p.av };
     if (room.players.size === 0) {
-      clearTimeout(room.timer);
-      rooms.delete(code);
+      if (inGame(room) && p.tok) {
+        room.seats[p.seat].human = false;
+        clearTimeout(room.emptyTimer);
+        room.emptyTimer = setTimeout(() => {
+          if (rooms.get(room.code) === room && room.players.size === 0) dropRoom(room);
+        }, 6e4);
+        return;
+      }
+      dropRoom(room);
       return;
     }
     if (room.host === id) room.host = room.players.keys().next().value;

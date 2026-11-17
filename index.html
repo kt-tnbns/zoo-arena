@@ -166,6 +166,11 @@ body.storymode #feed,body.storymode #banner{display:none!important}
 .draftinfo{display:none;text-align:center;font-size:14px;line-height:1.8;background:#151926;border:1px solid #2a3142;border-radius:12px;padding:8px 14px}.draftinfo span{margin:0 4px}
 .sitb{padding:3px 10px;font-size:12px;margin-top:4px}#readyBtn.isready{background:#5ad17a;color:#08210f}.gbtn.small{font-size:12px;text-decoration:underline}
 #exitBtn{border-color:#5a2a2e}
+.pb.mim{margin-top:4px;flex-wrap:wrap;max-width:230px;justify-content:center}.pb.mim button{font-size:19px;padding:3px 7px}.maskmk{pointer-events:none}
+#emoPop{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);display:none;gap:6px;background:#151926f2;border:1px solid #343c52;border-radius:14px;padding:8px;z-index:7;flex-wrap:wrap;justify-content:center;max-width:92vw}#emoPop button{font-size:26px;padding:4px 9px;line-height:1.2}
+.emoT{font-size:22px;vertical-align:middle}.toast.emo{border-left-color:#ffd84d}
+.emoF{animation:emoF 2s ease-out forwards;transform-box:fill-box;transform-origin:center}@keyframes emoF{0%{transform:scale(.2);opacity:0}15%{transform:scale(1.25);opacity:1}30%{transform:scale(1)}80%{opacity:1}100%{transform:translateY(-34px);opacity:0}}
+.fruit{animation:frb 1.6s ease-in-out infinite}@keyframes frb{50%{transform:translateY(-4px)}}body.spec #emoBtn,body.spec #cMine{display:none}
 </style></head><body>
 <div id="title" class="screen"><svg id="tsvg" viewBox="-320 -130 640 150" style="width:min(720px,90vw)"></svg><div class="logo">WILDLIFE ARENA</div><div class="dim">ทุกคนวางแผนพร้อมกัน · เฉลยพร้อมกัน</div><div class="rules"><div><span>🦁</span><b>ปกป้องสิงโตของคุณ</b><small>สิงโตล้ม = ทั้งฝูงตกรอบ</small></div><div><span>🎯</span><b>ล้มสิงโตฝูงอื่น</b><small>ตัวอื่นล้มไม่เป็นไร แต่สิงโตห้ามล้ม</small></div><div><span>🏆</span><b>ฝูงสุดท้ายที่เหลือชนะ</b><small>ครบรอบ = นับพลังชีวิตที่เหลือ</small></div></div><div style="display:none"></div><button class="mechip" id="meChip"></button><div class="row"><button id="tPlay" class="big">เล่น</button><button id="tRules">📖 กติกา</button><button id="tTut">เรื่องราว + สอนเล่น</button></div></div>
 <div id="lobby" class="screen">
@@ -196,20 +201,24 @@ body.storymode #feed,body.storymode #banner{display:none!important}
 <div class="rsec"><b>⏱ แต่ละรอบ</b><div>ทุกคนวางแผนพร้อมกัน (ไม่เห็นคำสั่งกัน) → กดพร้อม → เฉลยตามลำดับนี้ทุกครั้ง</div></div>
 <ol class="rord">
 <li><b>① ทุกตัวเดินพร้อมกัน</b><br><span>💥 ถ้าเดินเข้า <b>ช่องเดียวกัน</b> หรือ <b>สลับที่กัน</b> → ชนกัน ทั้งคู่อยู่ที่เดิม (ไม่เสียเลือด) · ช่องที่มีตัวยืนนิ่งอยู่ เดินเข้าไม่ได้</span></li>
-<li><b>🛡 หดกระดอง · 🦁 คำราม</b><br><span>โล่ลดดาเมจ 1 ทุกครั้งที่โดนในรอบนั้น · คำรามโดนทุกศัตรูที่ยืนติดตัว</span></li>
+<li><b>🐒 สลับที่</b><br><span>ลิงสลับตำแหน่งกับเป้าหมาย (เพื่อนหรือศัตรู) ถ้ายังอยู่ห่างไม่เกิน 3 ช่อง — เกิดก่อนการโจมตีทั้งหมด</span></li>
+<li><b>🛡 หดกระดอง · 🦁 คำราม · 🦜 ปลอมตัว</b><br><span>โล่ลดดาเมจ 1 ทุกครั้งที่โดนในรอบนั้น · คำรามโดนทุกศัตรูที่ยืนติดตัว</span></li>
 <li><b>🦏 พุ่งชน</b><br><span>พุ่งทีละตัว — ตัวที่อยู่ใกล้สิ่งที่จะชนกว่าได้ไปก่อน</span></li>
+<li><b>🐸 ตวัดลิ้น</b><br><span>ดึงตัวแรกในแนว 4 ช่อง (เพื่อนหรือศัตรู) เข้ามา 2 ช่อง · ศัตรูโดน 1 — ดึงเข้าแนวนกฮูกได้เพราะนกฮูกยิงทีหลัง</span></li>
 <li><b>🦉 เฝ้ายิง — ยิงพร้อมกันทุกตัว</b><br><span>โดนศัตรูตัวแรกในแนว (หินบัง, ยิงผ่านเพื่อน) · <b>ยิงใส่กันเอง = โดนทั้งคู่</b> ไม่มีใครยิงก่อน</span></li>
 <li><b>🦎 ซุ่มโจมตี — พร้อมกันทุกตัว</b><br><span>โดน ถ้าเป้าหมายยังอยู่ห่างไม่เกิน 2 ช่องหลังทุกตัวเดินเสร็จ ถ้าหนีพ้น = พลาด</span></li>
 <li><b>🐭 สแกน</b><br><span>เปิดหมอกรัศมี 6 ช่อง เห็นแม้ตัวที่ซ่อนในพุ่มหญ้า</span></li></ol>
 <div class="rsec"><b>🌿 การมองเห็น</b><div>เห็นแค่รอบๆ ตัวเอง · ศัตรูที่หายจากสายตาเหลือเป็นหมุด ? · ในพุ่มหญ้ามองไม่เห็น (ยกเว้นยืนติดกัน) · คาเมเลียนล่องหนเสมอ ยกเว้นยืนติดกันหรือหนูอยู่ใกล้</div></div>
+<div class="rsec"><b>🦜 นกแก้วปลอมตัว</b><div>ศัตรูจะเห็นนกแก้วเป็นสัตว์ที่มันปลอม (ชื่อ รูป เลือด) แต่ใช้ท่าของตัวนั้นไม่ได้ · โดนดาเมจเมื่อไหร่ความแตกทันที · สิงโตที่เห็นอาจเป็นตัวปลอม!</div></div>
+<div class="rsec"><b>🍎 ผลไม้กลางสนาม</b><div>เกิดกลางสนามเป็นระยะ (ทุกคนเห็น แม้ในหมอก) · ตัวที่เดินไปยืนทับได้ฟื้น 1 ♥ · มาถึงพร้อมกัน = ชนกัน ไม่มีใครได้</div></div>
 <button id="rulesOk" class="big">เข้าใจแล้ว</button></div></div>
 <div id="exitM" class="modal"><div class="mbox"><h2>ออกจากเกม?</h2><div id="exitTxt" class="dim" style="text-align:center"></div><div class="row"><button id="exitNo">เล่นต่อ</button><button id="exitYes" class="big">ออก</button></div></div></div>
 <div id="prof" class="modal"><div class="mbox"><h2>โปรไฟล์ของคุณ</h2><div id="avGrid" class="avgrid"></div>
  <div class="row"><input id="pname" maxlength="12" placeholder="ชื่อในเกม"><button id="rndName" title="สุ่มชื่อ">🎲</button></div>
  <div class="dim small">ชื่อนี้จะโชว์ให้คนอื่นในห้องเห็น</div><button id="profOk" class="big">บันทึก</button></div></div>
 <div id="draft" class="screen"><h1 style="font-size:24px">จัดฝูงของคุณ</h1><div class="dim">มีสิงโต 👑 หัวหน้าฝูงอยู่แล้ว — <b style="color:#ff8a8a">ถ้าสิงโตล้ม ทั้งฝูงตกรอบ</b> · เลือกเพิ่มอีก <b id="needN">3</b> ตัวไว้ปกป้องมัน (<span id="dupT">ซ้ำได้ไม่เกิน 2</span>)</div><div id="draftInfo" class="draftinfo"></div><div id="cards"></div><div id="tot" class="dim"></div><div class="row"><button id="draftBack">กลับ</button><button id="start" class="big">ลงสนาม</button><button id="pickOk" class="big" style="display:none">ยืนยันฝูง</button></div></div>
-<div id="end" class="screen"><div class="logo" style="font-size:36px" id="endTitle"></div><table id="endT"><thead><tr><th></th><th>ฝูง</th><th>ดาเมจ</th><th>กำจัด</th><th>สถานะ</th></tr></thead><tbody id="endRows"></tbody></table><div id="mvp"></div><div class="row"><button id="menu">เมนูหลัก</button><button id="again" class="big">เล่นอีกครั้ง</button></div></div>
-<div id="gArrow">👇</div><div id="main"><svg id="board"></svg><div id="bigtimer"><div class="bt-n">45</div><div><div class="bt-l">เวลาวางแผน</div><div class="bt-bar"><i></i></div><div class="bt-s"></div></div></div><div id="count"></div><div id="feed"></div><div id="tip"></div><div id="tut"></div><div id="phaseBar"></div><div id="story"><div class="sb top"></div><div class="sb bot"><div id="storyCap"></div><button id="storySkip">ข้าม ›</button></div></div><div id="ruleSplash"><div class="rules"><div><span>🦁</span><b>ปกป้องสิงโตของคุณ</b><small>สิงโตล้ม = ทั้งฝูงตกรอบ</small></div><div><span>🎯</span><b>ล้มสิงโตฝูงอื่น</b><small>ตัวอื่นล้มไม่เป็นไร แต่สิงโตห้ามล้ม</small></div><div><span>🏆</span><b>ฝูงสุดท้ายที่เหลือชนะ</b><small>ครบรอบ = นับพลังชีวิตที่เหลือ</small></div></div></div><div id="waitMsg"></div><div id="pop"></div><div id="banner"></div><div id="cam"><button id="rL" title="Q">⟲ หมุน</button><button id="rR" title="E">หมุน ⟳</button><button id="cFit" title="F">ทั้งสนาม</button><button id="cMine">ทีมเรา</button><button id="exitBtn">🚪 ออก</button><button id="rulesBtn">📖 กติกา</button><button id="vBtn" title="V">มุม: 3D เอียง</button><button id="sndBtn">เสียง: เปิด</button><button id="pvBtn">ภาพจำลอง: แสดงตลอด</button><span class="dim small" style="align-self:center">ลากพื้น = เลื่อน · ลากตัว = สั่ง · ล้อเมาส์ = ซูม · Q/E หมุน · V มุมมอง · Space ภาพจำลอง</span></div></div>
+<div id="end" class="screen"><div class="logo" style="font-size:36px" id="endTitle"></div><table id="endT"><thead><tr><th></th><th>ฝูง</th><th>ดาเมจ</th><th>กำจัด</th><th>สถานะ</th></tr></thead><tbody id="endRows"></tbody></table><div id="mvp"></div><div class="row"><button id="menu">เมนูหลัก</button><button id="again2">เปลี่ยนฝูง</button><button id="again" class="big">🔁 เล่นอีกรอบ</button></div></div>
+<div id="gArrow">👇</div><div id="main"><svg id="board"></svg><div id="bigtimer"><div class="bt-n">45</div><div><div class="bt-l">เวลาวางแผน</div><div class="bt-bar"><i></i></div><div class="bt-s"></div></div></div><div id="count"></div><div id="feed"></div><div id="tip"></div><div id="tut"></div><div id="phaseBar"></div><div id="story"><div class="sb top"></div><div class="sb bot"><div id="storyCap"></div><button id="storySkip">ข้าม ›</button></div></div><div id="ruleSplash"><div class="rules"><div><span>🦁</span><b>ปกป้องสิงโตของคุณ</b><small>สิงโตล้ม = ทั้งฝูงตกรอบ</small></div><div><span>🎯</span><b>ล้มสิงโตฝูงอื่น</b><small>ตัวอื่นล้มไม่เป็นไร แต่สิงโตห้ามล้ม</small></div><div><span>🏆</span><b>ฝูงสุดท้ายที่เหลือชนะ</b><small>ครบรอบ = นับพลังชีวิตที่เหลือ</small></div></div></div><div id="waitMsg"></div><div id="emoPop"></div><div id="pop"></div><div id="banner"></div><div id="cam"><button id="rL" title="Q">⟲ หมุน</button><button id="rR" title="E">หมุน ⟳</button><button id="cFit" title="F">ทั้งสนาม</button><button id="cMine">ทีมเรา</button><button id="emoBtn" title="ส่งอีโมต">😀</button><button id="exitBtn">🚪 ออก</button><button id="rulesBtn">📖 กติกา</button><button id="vBtn" title="V">มุม: 3D เอียง</button><button id="sndBtn">เสียง: เปิด</button><button id="pvBtn">ภาพจำลอง: แสดงตลอด</button><span class="dim small" style="align-self:center">ลากพื้น = เลื่อน · ลากตัว = สั่ง · ล้อเมาส์ = ซูม · Q/E หมุน · V มุมมอง · Space ภาพจำลอง</span></div></div>
 <div id="side"><div style="display:flex;align-items:flex-end;gap:8px"><div><h1>Wildlife Arena</h1><div id="round"></div></div><div id="timer"></div></div>
 <div id="units"></div><div id="actions"></div><button id="resolve">เฉลยผล</button>
 <div class="dim small">หมุด ? = ตำแหน่งศัตรูที่เห็นล่าสุด · เอาเมาส์ชี้ศัตรูหรือหมุดเพื่อดูว่ามันไปได้ถึงไหน · Esc = ยกเลิกการเล็ง</div>
@@ -367,6 +376,53 @@ skill:{dur:1800,tracks:{
  ping1:[[0,{sx:.2,sy:.2}],[.4,{o:1,sx:.3,sy:.3}],[.9,{o:0,sx:2.3,sy:2.3,e:'out'}],[1,{}]],
  ping2:[[0,{sx:.2,sy:.2}],[.55,{o:1,sx:.3,sy:.3}],[1,{o:0,sx:2.3,sy:2.3,e:'out'}]],
 }}},
+monkey:{name:'Monkey',role:'Trickster · swap',skillName:'Swap',
+parts:[
+ {id:'root',pivot:[0,0]},
+ {id:'tail',parent:'root',pivot:[-14,-14],svg:`<path d="M-14,-14 C-40,-12 -46,-44 -31,-51 C-22,-55 -19,-45 -27,-43" fill="none" stroke="#7a4a2a" stroke-width="5" stroke-linecap="round"/>`},
+ {id:'body',parent:'root',pivot:[0,-4],svg:`<ellipse cx="-8" cy="-2" rx="9" ry="4" fill="#6b4226"/><ellipse cx="10" cy="-2" rx="9" ry="4" fill="#6b4226"/><ellipse cx="0" cy="-22" rx="18" ry="20" fill="#8a5a34"/><ellipse cx="4" cy="-19" rx="11" ry="14" fill="#e2b98a"/>`},
+ {id:'armB',parent:'body',pivot:[-8,-32],svg:`<path d="M-8,-32 C-20,-26 -22,-14 -16,-8" fill="none" stroke="#7a4a2a" stroke-width="7" stroke-linecap="round"/>`},
+ {id:'head',parent:'body',pivot:[6,-40],svg:`<circle cx="-10" cy="-52" r="6.5" fill="#8a5a34"/><circle cx="-10" cy="-52" r="3.2" fill="#e2b98a"/><circle cx="22" cy="-52" r="6.5" fill="#8a5a34"/><circle cx="22" cy="-52" r="3.2" fill="#e2b98a"/><circle cx="6" cy="-52" r="15" fill="#8a5a34"/><ellipse cx="9" cy="-49" rx="11" ry="10" fill="#e2b98a"/><circle cx="6" cy="-53" r="2.1" fill="#1a1a22"/><circle cx="14" cy="-53" r="2.1" fill="#1a1a22"/><path d="M5,-45 Q10,-40 16,-45" fill="none" stroke="#5a3418" stroke-width="1.6" stroke-linecap="round"/>`},
+ {id:'hat',parent:'head',pivot:[6,-66],svg:`${HAT(6,-65,.85)}`},
+ {id:'armF',parent:'body',pivot:[10,-32],svg:`<path d="M10,-32 C22,-30 26,-20 22,-12" fill="none" stroke="#8a5a34" stroke-width="7" stroke-linecap="round"/><circle cx="22" cy="-12" r="4.5" fill="#e2b98a"/>`},
+],
+idle:{tail:[[0,{}],[.5,{r:10}],[1,{}]],armF:[[0,{}],[.5,{r:-8}],[1,{}]]},
+skill:{dur:1400,tracks:{
+ root:[[0,{}],[.18,{sx:1.12,sy:.88}],[.5,{y:-34,r:180,e:'out'}],[.82,{r:360,e:'in'}],[1,{r:360}]],
+ armF:[[0,{}],[.2,{r:-120}],[.8,{r:-120}],[1,{}]],
+ armB:[[0,{}],[.2,{r:100}],[.8,{r:100}],[1,{}]],
+ tail:[[0,{}],[.5,{r:30}],[1,{}]],
+}}},
+frog:{name:'Frog',role:'Hooker · pull',skillName:'Tongue',
+parts:[
+ {id:'root',pivot:[0,0]},
+ {id:'tongue',parent:'root',pivot:[24,-21],d:{sx:0},svg:`<rect x="24" y="-24" width="92" height="5.5" rx="2.7" fill="#f06a8c"/><circle cx="118" cy="-21" r="6.5" fill="#f06a8c"/><circle cx="116" cy="-23" r="2.2" fill="#ffb3c6"/>`},
+ {id:'body',parent:'root',pivot:[0,-4],svg:`<ellipse cx="-17" cy="-6" rx="15" ry="7.5" fill="#3f8f3a"/><ellipse cx="0" cy="-16" rx="26" ry="16" fill="#4fae48"/><ellipse cx="6" cy="-11" rx="18" ry="9" fill="#cfe8a0"/><ellipse cx="17" cy="-3" rx="8.5" ry="4" fill="#3f8f3a"/><circle cx="-12" cy="-24" r="2.6" fill="#3f8f3a"/><circle cx="-3" cy="-28" r="2" fill="#3f8f3a"/>`},
+ {id:'head',parent:'body',pivot:[14,-22],svg:`<ellipse cx="18" cy="-26" rx="18" ry="13" fill="#5cc054"/><circle cx="11" cy="-38" r="7.5" fill="#5cc054"/><circle cx="12" cy="-38.5" r="4.8" fill="#fff"/><circle cx="13.5" cy="-38.5" r="2.3" fill="#1a1a22"/><circle cx="27" cy="-38" r="7.5" fill="#5cc054"/><circle cx="28" cy="-38.5" r="4.8" fill="#fff"/><circle cx="29.5" cy="-38.5" r="2.3" fill="#1a1a22"/><path d="M5,-22 Q20,-15 36,-23" fill="none" stroke="#2f6a2c" stroke-width="1.8" stroke-linecap="round"/>`},
+ {id:'hat',parent:'head',pivot:[19,-45],svg:`${HAT(19,-45,.8)}`},
+],
+idle:{head:[[0,{}],[.5,{y:-1.5}],[.8,{y:0}],[1,{}]]},
+skill:{dur:1300,tracks:{
+ root:[[0,{}],[.2,{sx:.92,sy:1.08}],[.4,{sx:1.08,sy:.94}],[.85,{}],[1,{}]],
+ head:[[0,{}],[.22,{r:-10}],[.6,{r:-6}],[.9,{}],[1,{}]],
+ tongue:[[0,{sx:0}],[.24,{sx:0}],[.42,{sx:1,e:'out'}],[.62,{sx:1}],[.86,{sx:0,e:'in'}],[1,{sx:0}]],
+}}},
+parrot:{name:'Parrot',role:'Bluffer · disguise',skillName:'Mimic',
+parts:[
+ {id:'root',pivot:[0,0]},
+ {id:'tail',parent:'root',pivot:[-10,-16],svg:`<path d="M-8,-20 L-42,-2 L-30,-9 L-38,3 L-24,-7 L-8,-10Z" fill="#2a7fd6"/><path d="M-8,-18 L-34,-12 L-10,-12Z" fill="#e8483f"/>`},
+ {id:'body',parent:'root',pivot:[0,-4],svg:`<path d="M-4,-4 L-4,0 M6,-4 L6,0" stroke="#f0a030" stroke-width="3" stroke-linecap="round"/><ellipse cx="0" cy="-24" rx="16" ry="21" fill="#e8483f"/><ellipse cx="6" cy="-20" rx="9" ry="14" fill="#ffd84d"/>`},
+ {id:'wing',parent:'body',pivot:[-6,-36],svg:`<path d="M-6,-37 C-22,-30 -21,-10 -8,-3 C-1,-12 1,-26 -6,-37Z" fill="#2a9d4a"/><path d="M-13,-14 C-14,-8 -11,-5 -8,-3 C-6,-7 -5,-10 -5,-14Z" fill="#2a7fd6"/>`},
+ {id:'head',parent:'body',pivot:[4,-42],svg:`<circle cx="6" cy="-52" r="13" fill="#e8483f"/><ellipse cx="10" cy="-51" rx="7" ry="6.5" fill="#fff"/><circle cx="10" cy="-52" r="2.3" fill="#1a1a22"/><path d="M17,-57 C29,-57 31,-46 22,-41 L17,-46Z" fill="#f0a030"/><path d="M17,-46 L22,-41 C19,-39 16,-40 15,-43Z" fill="#c97a18"/>`},
+ {id:'hat',parent:'head',pivot:[5,-64],svg:`${HAT(5,-64,.8)}`},
+ {id:'puff',pivot:[0,-30],d:{o:0},svg:`<circle cx="-14" cy="-26" r="16" fill="#fff"/><circle cx="12" cy="-34" r="18" fill="#f2f4ff"/><circle cx="2" cy="-14" r="15" fill="#fff"/><circle cx="-4" cy="-46" r="13" fill="#e8ebff"/>`},
+],
+idle:{wing:[[0,{}],[.5,{r:7}],[1,{}]],head:[[0,{}],[.3,{r:6}],[.6,{r:-4}],[1,{}]]},
+skill:{dur:1200,tracks:{
+ root:[[0,{}],[.3,{sx:.15,e:'in'}],[.6,{sx:1,e:'out'}],[1,{}]],
+ wing:[[0,{}],[.2,{r:40}],[.5,{r:-10}],[1,{}]],
+ puff:[[0,{sx:.3,sy:.3}],[.25,{o:.95,sx:1,sy:1,e:'out'}],[.6,{o:.85,sx:1.3,sy:1.3}],[1,{o:0,sx:1.7,sy:1.7}]],
+}}},
 };
 
 /* generic clips shared by all units (target root/body/head) */
@@ -440,11 +496,12 @@ class Rig{
 
 
 /* ================= WILDLIFE ARENA · planning prototype ================= */
-const SEAT_ORDER=[0,2,1,3];let MODE='ffa';const allyOf=t=>MODE==='team'?(t<2?0:1):t,isAlly=U=>allyOf(U.t)===allyOf(ME),foe=(A,B)=>allyOf(A.t)!==allyOf(B.t),allies=()=>alive().filter(isAlly);let TEAMS=[0,1,2,3],TEAM_SZ=4,DUP=2,SOLO_CFG={size:4,mode:'ffa',team:4,dup:2,limit:2,rounds:8},ME=0,SEATS=[{name:'คุณ',human:true},{name:'บอท',human:false},{name:'บอท',human:false},{name:'บอท',human:false}];
+const SEAT_ORDER=[0,2,1,3];let MODE='ffa';const allyOf=t=>MODE==='team'?(t<2?0:1):t,isAlly=U=>ME>=0&&allyOf(U.t)===allyOf(ME),foe=(A,B)=>allyOf(A.t)!==allyOf(B.t),allies=()=>alive().filter(isAlly);let TEAMS=[0,1,2,3],TEAM_SZ=4,DUP=2,SOLO_CFG={size:4,mode:'ffa',team:4,dup:2,limit:2,rounds:8,map:'classic',items:'few'},ME=0,SEATS=[{name:'คุณ',human:true},{name:'บอท',human:false},{name:'บอท',human:false},{name:'บอท',human:false}];
 let LIMIT=2;const N=12,W=36,H=18,TH=12,SC=.6,MID=(N-1)/2,ZSTART=3;
 const TEAMC=['#ff5a5a','#4da3ff','#5ad17a','#ffcc33'],TEAMN=['แดง','ฟ้า','เขียว','เหลือง'];
-const STATS={lion:{hp:4,mv:2,vis:4,skill:'Roar',desc:'ศัตรูที่อยู่ติดตัวโดน 1 ดาเมจ และถูกผลักถอย 1 ช่อง'},rhino:{hp:3,mv:2,vis:4,skill:'Charge',desc:'พุ่งเป็นเส้นตรงสูงสุด 4 ช่อง ชนแล้ว 2 ดาเมจ + ผลัก'},owl:{hp:2,mv:2,vis:5,skill:'Overwatch',desc:'เฝ้าแนวยิง ศัตรูตัวแรกในแนวโดน 2 ดาเมจ (หินบังได้)'},chameleon:{hp:2,mv:3,vis:4,skill:'Ambush',desc:'ถ้าเป้าหมายอยู่ห่างไม่เกิน 2 ช่องหลังทุกคนเดิน โดน 2 ดาเมจ'},turtle:{hp:3,mv:2,vis:4,skill:'Shell guard',desc:'ตัวเองและพวกที่ติดกันรับดาเมจลด 1'},mouse:{hp:1,mv:4,vis:6,skill:'Ping',desc:'ปล่อยคลื่นสแกนรัศมี 6 ช่อง เจอศัตรูทุกตัวแม้ซ่อนอยู่'}};
-const POOL=['rhino','owl','chameleon','turtle','mouse'];
+const STATS={lion:{hp:4,mv:2,vis:4,skill:'Roar',desc:'ศัตรูที่อยู่ติดตัวโดน 1 ดาเมจ และถูกผลักถอย 1 ช่อง'},rhino:{hp:3,mv:2,vis:4,skill:'Charge',desc:'พุ่งเป็นเส้นตรงสูงสุด 4 ช่อง ชนแล้ว 2 ดาเมจ + ผลัก'},owl:{hp:2,mv:2,vis:5,skill:'Overwatch',desc:'เฝ้าแนวยิง ศัตรูตัวแรกในแนวโดน 2 ดาเมจ (หินบังได้)'},chameleon:{hp:2,mv:3,vis:4,skill:'Ambush',desc:'ถ้าเป้าหมายอยู่ห่างไม่เกิน 2 ช่องหลังทุกคนเดิน โดน 2 ดาเมจ'},turtle:{hp:3,mv:2,vis:4,skill:'Shell guard',desc:'ตัวเองและพวกที่ติดกันรับดาเมจลด 1'},mouse:{hp:1,mv:4,vis:6,skill:'Ping',desc:'ปล่อยคลื่นสแกนรัศมี 6 ช่อง เจอศัตรูทุกตัวแม้ซ่อนอยู่'},monkey:{hp:2,mv:3,vis:4,skill:'Swap',desc:'สลับที่กับตัวไหนก็ได้ (เพื่อนหรือศัตรู) ที่อยู่ห่างไม่เกิน 3 ช่องหลังทุกตัวเดิน'},frog:{hp:3,mv:2,vis:4,skill:'Tongue',desc:'ตวัดลิ้นแนวตรง 4 ช่อง ดึงตัวแรกที่โดน (เพื่อนหรือศัตรู) เข้ามา 2 ช่อง · ศัตรูโดน 1 ดาเมจ'},parrot:{hp:2,mv:3,vis:5,skill:'Mimic',desc:'ปลอมตัวเป็นสัตว์อื่นในสายตาศัตรู ไว้ขู่/หลอก (ไม่ได้ความสามารถตัวนั้น) · โดนตีแล้วความแตก'}};
+const POOL=['rhino','owl','chameleon','turtle','mouse','monkey','frog','parrot'];
+const AIMT={owl:'overwatch',rhino:'charge',frog:'tongue'},TGT={chameleon:'ambush',monkey:'swap'},TGR=t=>t==='monkey'?3:2,GUISES=['lion','rhino','owl','chameleon','turtle','mouse','monkey','frog'];
 let VIEW=0;
 const vr=(r,c)=>{let p=[r,c];for(let i=0;i<VIEW;i++)p=[p[1],N-1-p[0]];return p};
 const unvr=(a,b)=>{let p=[a,b];for(let i=0;i<(4-VIEW)%4;i++)p=[p[1],N-1-p[0]];return p};
@@ -453,9 +510,9 @@ const P=(r,c)=>{const[a,b]=vr(r,c);return PROJ==='iso'?[(b-a)*W,(b+a)*H]:[(b-(N-
 const dk=(r,c)=>{const[a,b]=vr(r,c);return PROJ==='iso'?a+b:a+b*.001};
 const FOOT=()=>PROJ==='iso'?0:S*.4;
 /* approx art bounds per animal (incl. hat) -> scale so each piece stays inside its tile, like chess pieces */
-const BB={lion:{w:72,h:110},rhino:{w:120,h:66},owl:{w:90,h:94},chameleon:{w:104,h:60},turtle:{w:104,h:50},mouse:{w:100,h:54}};
+const BB={lion:{w:72,h:110},rhino:{w:120,h:66},owl:{w:90,h:94},chameleon:{w:104,h:60},turtle:{w:104,h:50},mouse:{w:100,h:54},monkey:{w:80,h:92},frog:{w:96,h:60},parrot:{w:80,h:90}};
 const fitScale=t=>{const b=BB[t],box=PROJ==='iso'?{w:2*W*.8,h:2*H*1.45}:{w:S*.84,h:S*.84};return Math.min(box.w/b.w,box.h/b.h)};
-function applyScale(U){if(U.base){U.base.setAttribute('rx',PROJ==='iso'?W*.62:S*.42);U.base.setAttribute('ry',PROJ==='iso'?H*.62:S*.2);U.base.setAttribute('cy',PROJ==='iso'?0:-S*.18)}U.sc=fitScale(U.type);U.topY=-BB[U.type].h*U.sc;face(U,U.face||1);hpDraw(U);U.ok.setAttribute('transform',`translate(0,${U.topY+66})`);if(U.crown)U.crown.setAttribute('y',U.topY-14);U.pvKey=null}
+function applyScale(U){if(U.base){U.base.setAttribute('rx',PROJ==='iso'?W*.62:S*.42);U.base.setAttribute('ry',PROJ==='iso'?H*.62:S*.2);U.base.setAttribute('cy',PROJ==='iso'?0:-S*.18)}{const lt=U.look||U.type;U.sc=fitScale(lt);U.topY=-BB[lt].h*U.sc}face(U,U.face||1);hpDraw(U);U.ok.setAttribute('transform',`translate(0,${U.topY+66})`);if(U.crown)U.crown.setAttribute('y',U.topY-14);U.pvKey=null}
 const UP=(r,c)=>{const[x,y]=P(r,c);return[x,y+FOOT()]};
 const sdx=(r0,c0,r1,c1)=>P(r1,c1)[0]-P(r0,c0)[0];
 const inB=(r,c)=>r>=0&&c>=0&&r<N&&c<N;
@@ -466,13 +523,25 @@ const orbit=p=>{const o=[p];for(let i=0;i<3;i++)o.push(rot(o[o.length-1]));retur
 const ROCK=new Set([[4,4],[2,6]].flatMap(orbit).map(p=>K(...p)));
 const GRASS=new Set([[1,5],[3,2]].flatMap(orbit).map(p=>K(...p)));
 const SLOTS=[[11,11],[11,9],[9,11],[9,9],[10,7],[7,10]];
-let GEN=0,RUNGEN=0;/* resetMatch bumps GEN: a resolve still running from an abandoned match just stops at its next sleep */
-const sleep=ms=>{const g=RUNGEN;return new Promise(r=>{const go=()=>{if(g===GEN)r()};document.hidden?go():setTimeout(go,ms)})};
+/* maps: each entry lists base tiles, mirrored to all 4 corners so every pride gets the same terrain */
+const MAPS={classic:{n:'ป่าคลาสสิก',rock:[[4,4],[2,6]],grass:[[1,5],[3,2]]},open:{n:'ทุ่งโล่ง',rock:[[3,5]],grass:[[2,3]]},rocks:{n:'หุบหิน',rock:[[4,4],[2,6],[3,7],[0,5]],grass:[[1,5],[3,2]]},jungle:{n:'ป่ารก',rock:[[4,4]],grass:[[1,5],[3,2],[5,5],[2,7],[5,3],[3,4]]},random:{n:'สุ่มทุกเกม'}};
+let SEED=1,MAPK='classic',ITEMS='few',CURMAP='classic';
+const rng=s=>()=>{s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+function setMap(k,seed){let m=MAPS[k]||MAPS.classic;
+  if(k==='random'){const R=rng(seed||1),sp=SLOTS.flatMap(orbit),rock=[],grass=[],pt=()=>[Math.floor(R()*N),Math.floor(R()*N)];
+    const nr=2+Math.floor(R()*3),ng=2+Math.floor(R()*4);
+    for(let g=0;rock.length<nr&&g<200;g++){const q=pt();if(orbit(q).some(([a,b])=>sp.some(([x,y])=>cheb(a,b,x,y)<=1)||(a>=5&&a<=6&&b>=5&&b<=6)))continue;rock.push(q)}
+    const rk=new Set(rock.flatMap(orbit).map(q=>K(...q)));
+    for(let g=0;grass.length<ng&&g<200;g++){const q=pt();if(orbit(q).some(([a,b])=>rk.has(K(a,b))||sp.some(([x,y])=>a===x&&b===y)))continue;grass.push(q)}
+    m={rock,grass}}
+  ROCK.clear();GRASS.clear();m.rock.flatMap(orbit).forEach(q=>ROCK.add(K(...q)));m.grass.flatMap(orbit).forEach(q=>{if(!ROCK.has(K(...q)))GRASS.add(K(...q))});CURMAP=k+(k==='random'?seed:'')}
+let FAST=false;const HID=()=>FAST||document.hidden;let GEN=0,RUNGEN=0;/* resetMatch bumps GEN: a resolve still running from an abandoned match just stops at its next sleep */
+const sleep=ms=>{const g=RUNGEN;return new Promise(r=>{const go=()=>{if(g===GEN)r()};HID()?go():setTimeout(go,ms)})};
 const dia=(x,y,s=1)=>{if(PROJ==='iso')return`${x},${y-H*s} ${x+W*s},${y} ${x},${y+H*s} ${x-W*s},${y}`;const h=S/2*s;return`${x-h},${y-h} ${x+h},${y-h} ${x+h},${y+h} ${x-h},${y+h}`};
 
 const svg=document.getElementById('board');
 const gT=mk('g'),gFog=mk('g',{style:'pointer-events:none'}),gZ=mk('g',{style:'pointer-events:none'}),gO=mk('g'),gF=mk('g',{style:'pointer-events:none'});
-const gTag=mk('g',{style:'pointer-events:none'}),gPv=mk('g',{style:'pointer-events:none'});const gFx=mk('g',{style:'pointer-events:none'}),gZone=mk('g',{style:'pointer-events:none'});svg.append(gT,gZone,gFog,gZ,gFx,gO,gPv,gTag,gF);
+const gTag=mk('g',{style:'pointer-events:none'}),gPv=mk('g',{style:'pointer-events:none'});const gFx=mk('g',{style:'pointer-events:none'}),gZone=mk('g',{style:'pointer-events:none'});const gFr=mk('g',{style:'pointer-events:none'});svg.append(gT,gZone,gFog,gFr,gZ,gFx,gO,gPv,gTag,gF);
 const FULL={};function calcFull(){Object.assign(FULL,PROJ==='iso'?{x:-N*W-20,y:-140,w:2*N*W+40,h:2*N*H+TH+180}:{x:-N*S/2-30,y:-S-90,w:N*S+60,h:N*S+S+130})}calcFull();let cam={...FULL};
 function applyCam(){svg.setAttribute('viewBox',`${cam.x} ${cam.y} ${cam.w} ${cam.h}`);try{placePop();guideUpdate()}catch(e){}}
 function focus(r,c,z){const[x,y]=P(r,c);cam.w=FULL.w/z;cam.h=FULL.h/z;cam.x=x-cam.w/2;cam.y=y-cam.h/2-30;applyCam()}
@@ -562,7 +631,7 @@ function rotateView(d){hideTip();const g=centerTile();
 /* ---------- units ---------- */
 let units=[],round=1,known={},pinged=new Set(),busy=false,sel=null,mode='idle',hov=null,hoverEnemy=null,shields=new Set(),over=false;
 function makeUnit(t,type,r,c,i){
-  const U={id:`${t}-${i}`,t,type,r,c,hp:STATS[type].hp,alive:true,order:null};
+  const U={id:`${t}-${i}`,t,type,look:type,r,c,hp:STATS[type].hp,alive:true,order:null};
   U.outer=mk('g',{class:'unit','data-team':t,style:`--team:${TEAMC[t]}`});
   U.base=mk('ellipse',{class:t===ME?'mybase':'foebase',style:`stroke:${TEAMC[t]};fill:${TEAMC[t]}`});U.outer.appendChild(U.base);
   U.inner=mk('g');U.outer.appendChild(U.inner);if(type==='lion'){U.crown=mk('text',{class:'crownmk','text-anchor':'middle'});U.crown.textContent='👑';U.outer.appendChild(U.crown)}U.rig=new Rig(UNITS[type],U.inner);U.rig.el=Math.random()*1600;
@@ -576,7 +645,7 @@ function makeUnit(t,type,r,c,i){
   applyScale(U);face(U,sdx(r,c,MID,MID));setPos(U,...UP(r,c));hpDraw(U);objs.push({k:0,el:U.outer,U});units.push(U);return U}
 function face(U,dx){if(dx===0)return;U.face=dx<0?-1:1;const k=U.sc||SC;U.inner.setAttribute('transform',`scale(${k*U.face},${k})`);}
 function setPos(U,x,y){U.x=x;U.y=y;U.outer.setAttribute('transform',`translate(${x},${y})`)}
-function hpDraw(U){const m=STATS[U.type].hp;let s='';for(let i=0;i<m;i++)s+=`<rect x="${-m*5+i*10}" y="${(U.topY||-56)-10}" width="8" height="4" rx="1" fill="${i<U.hp?TEAMC[U.t]:'#2a3142'}" stroke="#0f121b" stroke-width="1"/>`;U.hpG.innerHTML=s}
+function hpDraw(U){const lt=U.look||U.type,m=STATS[lt].hp,h=U.hp+m-STATS[U.type].hp;let s='';for(let i=0;i<m;i++)s+=`<rect x="${-m*5+i*10}" y="${(U.topY||-56)-10}" width="8" height="4" rx="1" fill="${i<h?TEAMC[U.t]:'#2a3142'}" stroke="#0f121b" stroke-width="1"/>`;U.hpG.innerHTML=s}
 function resort(){objs.forEach(o=>{if(o.U)o.k=dk(o.U.r,o.U.c)+.5;if(o.G){const k=known[o.G.id];o.k=k?dk(k.r,k.c)+.45:0}});objs.sort((a,b)=>a.k-b.k).forEach(o=>gO.appendChild(o.el))}
 const alive=t=>units.filter(U=>U.alive&&(t==null||U.t===t));
 const unitAt=(r,c)=>units.find(U=>U.alive&&U.r===r&&U.c===c);
@@ -585,25 +654,33 @@ const reachT=(r,c,n)=>{const o=[];for(let i=-n;i<=n;i++)for(let j=-n;j<=n;j++){c
 /* ---------- vision (Red POV) ---------- */
 let VIS=new Set();
 let STORY=false,storySkip=false;
-function computeVis(){VIS=new Set();if(STORY){for(let r=0;r<N;r++)for(let c=0;c<N;c++)VIS.add(K(r,c));return}const reds=allies();for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(reds.some(U=>cheb(U.r,U.c,r,c)<=STATS[U.type].vis))VIS.add(K(r,c))}
-function canSee(E){if(STORY||isAlly(E))return true;if(pinged.has(E.id))return true;if(!VIS.has(K(E.r,E.c)))return false;const reds=allies();
+const GOD=()=>STORY||(NET.mp&&NET.spec);
+/* parrot disguise: enemies see U.guise, allies (and spectators) see the real animal with a 🎭 badge */
+const vt=U=>U.guise&&!(isAlly(U)||GOD())?U.guise:U.type;
+function setLook(U){const lt=vt(U);if(U.look!==lt){U.look=lt;U.inner.innerHTML='';U.rig=new Rig(UNITS[lt],U.inner);
+    if(lt==='lion'&&!U.crown){U.crown=mk('text',{class:'crownmk','text-anchor':'middle'});U.crown.textContent='👑';U.outer.appendChild(U.crown)}applyScale(U)}
+  if(U.crown)U.crown.style.display=lt==='lion'?'':'none';
+  const show=U.guise&&lt===U.type;if(show&&!U.mask){U.mask=mk('text',{'text-anchor':'middle','font-size':15,class:'maskmk'});U.outer.appendChild(U.mask)}
+  if(U.mask){U.mask.style.display=show?'':'none';if(show){U.mask.textContent='🎭'+EMO[U.guise];U.mask.setAttribute('y',(U.topY||-60)-12)}}}
+function computeVis(){VIS=new Set();if(GOD()){for(let r=0;r<N;r++)for(let c=0;c<N;c++)VIS.add(K(r,c));return}const reds=allies();for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(reds.some(U=>cheb(U.r,U.c,r,c)<=STATS[U.type].vis))VIS.add(K(r,c))}
+function canSee(E){if(GOD()||isAlly(E))return true;if(pinged.has(E.id))return true;if(!VIS.has(K(E.r,E.c)))return false;const reds=allies();
   if(E.type==='chameleon')return reds.some(U=>cheb(U.r,U.c,E.r,E.c)<=1||(U.type==='mouse'&&cheb(U.r,U.c,E.r,E.c)<=2));
   if(GRASS.has(K(E.r,E.c)))return reds.some(U=>cheb(U.r,U.c,E.r,E.c)<=1);return true}
 const ringOf=(r,c)=>Math.min(r,c,N-1-r,N-1-c),zoneAt=rd=>0,inLava=(r,c,rd=round)=>ringOf(r,c)<zoneAt(rd);
 function drawZone(){gZone.innerHTML='';const z=zoneAt(round),zn=zoneAt(round+1);for(let r=0;r<N;r++)for(let c=0;c<N;c++){const g=ringOf(r,c),[x,y]=P(r,c);
   if(g<z)gZone.appendChild(mk('polygon',{points:dia(x,y,.98),fill:'#ff4a1a','fill-opacity':.42,class:'lava'}));
   else if(g<zn&&!TUT)gZone.appendChild(mk('polygon',{points:dia(x,y,.86),fill:'#ff9a3a','fill-opacity':.14,stroke:'#ff9a3a','stroke-width':1.5,'stroke-dasharray':'5 4'}))}}
-function refreshView(){computeVis();gFog.innerHTML='';if(!TUT)drawZone();else gZone.innerHTML='';
+function refreshView(){computeVis();drawFruits();gFog.innerHTML='';if(!TUT)drawZone();else gZone.innerHTML='';
   for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!VIS.has(K(r,c))){const[x,y]=P(r,c);gFog.appendChild(mk('polygon',{points:dia(x,y,1.01),fill:'#06110a','fill-opacity':.6}))}
   objs.forEach(o=>{if(o.rc)o.el.style.filter=VIS.has(K(...o.rc))?'':'brightness(.35)'});
-  for(const E of units){if(isAlly(E)){E.outer.style.display=E.alive||E.dying?'':'none';E.ghost.style.display='none';E.inner.style.opacity=E.type==='chameleon'?.6:'';continue}
+  for(const E of units){setLook(E);if(isAlly(E)){E.outer.style.display=E.alive||E.dying?'':'none';E.ghost.style.display='none';E.inner.style.opacity=E.type==='chameleon'?.6:'';continue}
     const s=E.alive&&canSee(E);E.outer.style.display=s||E.dying?'':'none';
     if(s)known[E.id]={r:E.r,c:E.c,round};
     const k=known[E.id];
     if(E.alive&&!s&&k){E.ghost.style.display='';E.ghost.setAttribute('transform',`translate(${UP(k.r,k.c).join(',')})`)}else E.ghost.style.display='none'}
   resort()}
 function intel(E){/* what Red believes about enemy E: pos + reach this round */
-  if(!E.alive)return null;const mv=STATS[E.type].mv;
+  if(!E.alive)return null;const mv=STATS[vt(E)].mv;
   if(E.outer.style.display!=='none')return{r:E.r,c:E.c,reach:mv,seen:true};
   const k=known[E.id];if(!k)return null;return{r:k.r,c:k.c,reach:Math.min(4,mv*(round-k.round+1)),seen:false}}
 
@@ -626,6 +703,8 @@ function drawOrder(U){const o=U.order;if(!o)return;const me=[U.r,U.c];
   if(o.type==='overwatch'){const L=lane(U.r,U.c,o.dr,o.dc,8);L.forEach(([a,b])=>hl(a,b,'#ff3b3b',.18));if(L.length)line(me,L[L.length-1],'#ff3b3b','7 5',2)}
   if(o.type==='charge'){const L=lane(U.r,U.c,o.dr,o.dc,4);L.forEach(([a,b])=>hl(a,b,'#ffb347',.22));if(L.length){line(me,L[L.length-1],'#ffb347','3 6');arrowHead(me,L[L.length-1],'#ffb347')}}
   if(o.type==='ambush'){const T=units.find(V=>V.id===o.target),I=T&&intel(T);if(I){line(me,[I.r,I.c],'#c084ff','4 5');ring(I.r,I.c,'#c084ff')}}
+  if(o.type==='swap'){const T=units.find(V=>V.id===o.target),I=T&&intel(T);if(I){line(me,[I.r,I.c],'#ffb86b','4 5');arrowHead(me,[I.r,I.c],'#ffb86b');arrowHead([I.r,I.c],me,'#ffb86b');ring(I.r,I.c,'#ffb86b')}}
+  if(o.type==='tongue'){const L=lane(U.r,U.c,o.dr,o.dc,4);L.forEach(([a,b])=>hl(a,b,'#f06a8c',.22));if(L.length){line(L[L.length-1],me,'#f06a8c','3 6');arrowHead(L[L.length-1],me,'#f06a8c')}}
   if(o.type==='shield'){[[0,0],[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([a,b])=>inB(U.r+a,U.c+b)&&hl(U.r+a,U.c+b,'#6fd8ff',.15))}
   if(o.type==='roar'){[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([a,b])=>inB(U.r+a,U.c+b)&&hl(U.r+a,U.c+b,'#ffd84d',.18))}
   if(o.type==='ping'&&sel===U){const[x,y]=P(U.r,U.c);gZ.appendChild(mk('polygon',{points:dia(x,y,13),fill:'none',stroke:'#ffe08a','stroke-width':2,'stroke-dasharray':'6 6','stroke-opacity':.7}))}}
@@ -636,7 +715,7 @@ function draw(){gZ.innerHTML='';gTag.innerHTML='';if(TUT&&TUT.goal){hl(...TUT.go
   const ordering=!!sel&&['move','aim','target'].includes(mode);svg.classList.toggle('ordering',ordering);
   units.forEach(U=>{U.outer.classList.toggle('selu',U===sel);U.ok.style.display=U.t===ME&&U.alive&&U.order&&!busy?'':'none'});
   units.forEach(U=>U.hpG.style.display=U.alive&&(U===sel||U===hoverEnemy||U.hp<STATS[U.type].hp)?'':'none');
-  if(hoverEnemy){const I=intel(hoverEnemy);if(I)tag(I.r,I.c,NAMES[hoverEnemy.type]+(I.seen?'':' · last seen'),TEAMC[hoverEnemy.t])}
+  if(hoverEnemy){const I=intel(hoverEnemy);if(I)tag(I.r,I.c,NAMES[vt(hoverEnemy)]+(I.seen?'':' · last seen'),TEAMC[hoverEnemy.t])}
   if(!busy)alive(ME).forEach(drawOrder);
   if(hoverEnemy&&!(mode==='aim'))reachZone(hoverEnemy);
   if(sel){ring(sel.r,sel.c,'#ffffff');
@@ -644,8 +723,8 @@ function draw(){gZ.innerHTML='';gTag.innerHTML='';if(TUT&&TUT.goal){hl(...TUT.go
     if(mode==='aim'&&hov){const owl=sel.type==='owl',d=dirTo(sel,hov[0],hov[1],owl?8:4);if(d){const L=lane(sel.r,sel.c,d[0],d[1],owl?8:4),S=new Set(L.map(p=>K(...p)));
       units.filter(E=>!isAlly(E)&&E.alive).forEach(E=>{const p=reachZone(E,S),I=intel(E);if(I&&p>0)tag(I.r,I.c,...chance(p))});
       L.forEach(([a,b])=>ring(a,b,owl?'#ff3b3b':'#ffb347'))}}
-    if(mode==='target'){reachT(sel.r,sel.c,2).forEach(([a,b])=>hl(a,b,'#c084ff',.12,.8));
-      units.filter(E=>!isAlly(E)&&intel(E)).forEach(E=>{const I=intel(E),R=reachT(I.r,I.c,I.reach),inR=R.filter(([a,b])=>cheb(a,b,sel.r,sel.c)<=2).length;
+    if(mode==='target'){reachT(sel.r,sel.c,TGR(sel.type)).forEach(([a,b])=>hl(a,b,'#c084ff',.12,.8));
+      units.filter(E=>!isAlly(E)&&intel(E)).forEach(E=>{const I=intel(E),R=reachT(I.r,I.c,I.reach),inR=R.filter(([a,b])=>cheb(a,b,sel.r,sel.c)<=TGR(sel.type)).length;
         inR&&tag(I.r,I.c,...chance(inR/R.length))})}}
   drawPreview();renderPanel();placePop();if(typeof guideUpdate==='function')guideUpdate()}
 
@@ -658,11 +737,11 @@ function limitWarn(){const t=performance.now();if(t-limitToastAt<1500)return;lim
 function setOrder(U,o){if(!canOrder(U)){limitWarn();return false}U.order=o;beep(990,.05,.04);return true}
 
 /* ---------- tooltip ---------- */
-function tipHTML(U,ghost){const st=STATS[U.type],mine=U.t===ME;if(U.type==='lion')return tipHTML0(U,ghost)+`<div class="tt-g" style="color:#ff8a8a">👑 หัวหน้าฝูง — ${mine?'ถ้าล้ม ฝูงคุณตกรอบ':'ล้มตัวนี้ = ฝูงนี้ตกรอบ'}</div>`;return tipHTML0(U,ghost)}
-function tipHTML0(U,ghost){const st=STATS[U.type],mine=U.t===ME;
-  return `<div class="tt-h"><span class="dot" style="background:${TEAMC[U.t]}"></span><b>${NAMES[U.type]}</b> <span class="dim">· ฝูง${TEAMN[U.t]}${mine?' (คุณ)':''}</span></div>`+
-   (ghost?`<div class="tt-g">เห็นครั้งล่าสุดตรงนี้ — ตอนนี้อาจอยู่ในโซนสีส้ม</div>`:`<div class="dim small">พลังชีวิต ${'♥'.repeat(Math.max(0,U.hp))}${'♡'.repeat(Math.max(0,st.hp-U.hp))} · เดินได้ ${st.mv} · มองเห็น ${st.vis}</div>`)+
-   `<div class="tt-s"><b>${SK_TH[U.type]}</b> — ${st.desc}</div>`}
+function tipHTML(U,ghost){const st=STATS[vt(U)],mine=U.t===ME;if(vt(U)==='lion')return tipHTML0(U,ghost)+`<div class="tt-g" style="color:#ff8a8a">👑 หัวหน้าฝูง — ${mine?'ถ้าล้ม ฝูงคุณตกรอบ':'ล้มตัวนี้ = ฝูงนี้ตกรอบ'}</div>`;return tipHTML0(U,ghost)}
+function tipHTML0(U,ghost){const st=STATS[vt(U)],mine=U.t===ME;
+  return `<div class="tt-h"><span class="dot" style="background:${TEAMC[U.t]}"></span><b>${NAMES[vt(U)]}</b> <span class="dim">· ฝูง${TEAMN[U.t]}${mine?' (คุณ)':''}</span></div>`+
+   (ghost?`<div class="tt-g">เห็นครั้งล่าสุดตรงนี้ — ตอนนี้อาจอยู่ในโซนสีส้ม</div>`:`<div class="dim small">พลังชีวิต ${'♥'.repeat(Math.max(0,U.hp+st.hp-STATS[U.type].hp))}${'♡'.repeat(Math.max(0,STATS[U.type].hp-U.hp))} · เดินได้ ${st.mv} · มองเห็น ${st.vis}</div>`)+
+   `<div class="tt-s"><b>${SK_TH[vt(U)]}</b> — ${st.desc}</div>`}
 function showTip(U,e,ghost){if(odrag&&odrag.moved)return;const t=document.getElementById('tip');t.innerHTML=tipHTML(U,ghost);t.style.display='block';moveTip(e)}
 function moveTip(e){const t=document.getElementById('tip');if(t.style.display!=='block')return;const m=document.getElementById('main').getBoundingClientRect();
   let x=e.clientX-m.left+16,y=e.clientY-m.top+16;if(x+260>m.width)x-=280;if(y+120>m.height)y-=130;t.style.left=x+'px';t.style.top=y+'px'}
@@ -702,7 +781,7 @@ function onHover(r,c){hov=[r,c];if(mode==='aim'||mode==='move')draw()}
 svg.addEventListener('pointermove',e=>{if(drag&&dragged)return;const t=pickTile(e);if(t&&(!hov||hov[0]!==t[0]||hov[1]!==t[1]))onHover(...t)});
 svg.addEventListener('click',e=>{if(dragged||busy||over)return;const t=pickTile(e),uEl=e.target.closest('.unit'),gEl=e.target.closest('.ghost');
   const U=uEl&&units.find(u=>u.outer===uEl),G=gEl&&units.find(u=>u.ghost===gEl);
-  if(sel&&mode==='target'){const T=(U&&!isAlly(U)&&U)||G;if(T){setOrder(sel,{type:'ambush',target:T.id});mode='idle';return draw()}}
+  if(sel&&mode==='target'){const T=(U&&U!==sel&&U.alive&&(!isAlly(U)||sel.type==='monkey')&&U)||G;if(T){setOrder(sel,{type:TGT[sel.type],target:T.id});mode='idle';return draw()}}
   if(sel&&mode==='aim'&&t&&lastPtr==='touch'){const d=dirTo(sel,t[0],t[1],sel.type==='owl'?8:4),k=d&&d.join();if(k&&touchAim!==k){touchAim=k;hov=t;draw();return}touchAim=null}
   if(sel&&(mode==='move'||mode==='aim')&&t)return onTile(...t,U);
   if(lastPtr==='touch'&&(U||G)&&!(U&&U.t===ME)){showTip(U||G,e,!U);clearTimeout(window._tt);window._tt=setTimeout(hideTip,2600)}
@@ -711,29 +790,32 @@ svg.addEventListener('click',e=>{if(dragged||busy||over)return;const t=pickTile(
 function onTile(r,c,U){if(busy||over||dragged)return;
   const red=units.find(U=>U.alive&&U.t===ME&&U.r===r&&U.c===c);
   if(sel&&mode==='move'&&moveOpts(sel).some(([a,b])=>a===r&&b===c)){setOrder(sel,{type:'move',r,c});mode='idle';return draw()}
-  if(sel&&mode==='aim'){const d=dirTo(sel,r,c,sel.type==='owl'?8:4);if(d){setOrder(sel,{type:sel.type==='owl'?'overwatch':'charge',dr:d[0],dc:d[1]});mode='idle';return draw()}}
-  if(sel&&mode==='target'){const T=units.find(E=>!isAlly(E)&&E.alive&&(()=>{const I=intel(E);return I&&I.r===r&&I.c===c})());if(T){setOrder(sel,{type:'ambush',target:T.id});mode='idle';return draw()}}
+  if(sel&&mode==='aim'){const d=dirTo(sel,r,c,sel.type==='owl'?8:4);if(d){setOrder(sel,{type:AIMT[sel.type],dr:d[0],dc:d[1]});mode='idle';return draw()}}
+  if(sel&&mode==='target'){const T=units.find(E=>E!==sel&&E.alive&&(!isAlly(E)||sel.type==='monkey')&&(()=>{const I=intel(E);return I&&I.r===r&&I.c===c})());if(T){setOrder(sel,{type:TGT[sel.type],target:T.id});mode='idle';return draw()}}
   if(red)return select(red);
   if(U&&U.t===ME&&U.alive)return select(U);
   sel=null;mode='idle';draw()}
 function doSkill(){touchAim=null;if(!sel)return;if(!canOrder(sel)){limitWarn();return}const t=sel.type;if(sel.order&&sel.order.type==='move')sel.order=null;
-  if(t==='owl'||t==='rhino'){mode='aim'}else if(t==='chameleon'){mode='target'}
+  if(AIMT[t]){mode='aim'}else if(TGT[t]){mode='target'}else if(t==='parrot'){mode='mimic'}
   else{setOrder(sel,{type:{lion:'roar',turtle:'shield',mouse:'ping'}[t]});mode='idle'}draw()}
 document.addEventListener('keyup',e=>{if(e.code==='Space'){pvHold=false;draw()}});
 document.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat){e.preventDefault();pvHold=true;draw()}if(e.key==='v'||e.key==='V')setProj(PROJ==='iso'?'top':'iso');if(e.key==='Escape'){mode='idle';draw()}if(e.key==='q'||e.key==='Q')rotateView(-1);if(e.key==='e'||e.key==='E')rotateView(1)});
 
 /* ---------- panel ---------- */
-const SK_TH={lion:'คำราม',rhino:'พุ่งชน',owl:'เฝ้ายิง',chameleon:'ซุ่มโจมตี',turtle:'หดกระดอง',mouse:'สแกน'};
-const HINT_TH={pick:TOUCH?'ลากตัวไปวาง หรือแตะปุ่ม เดิน':'ลากตัวไปวางช่องที่จะเดิน หรือกดปุ่ม',move:'คลิกช่องสีขาว หรือลากตัวไปวาง',aim:TOUCH?'แตะทิศที่จะเล็ง แล้วแตะซ้ำเพื่อยืนยัน':'ชี้หรือลากไปทิศที่จะเล็ง แล้วปล่อย/คลิกเพื่อล็อก',target:'คลิกศัตรู หรือหมุด ? ที่จะซุ่มโจมตี',idle:'สั่งแล้ว ✓'};
+const SK_TH={lion:'คำราม',rhino:'พุ่งชน',owl:'เฝ้ายิง',chameleon:'ซุ่มโจมตี',turtle:'หดกระดอง',mouse:'สแกน',monkey:'สลับที่',frog:'ตวัดลิ้น',parrot:'ปลอมตัว'};
+const HINT_TH={pick:TOUCH?'ลากตัวไปวาง หรือแตะปุ่ม เดิน':'ลากตัวไปวางช่องที่จะเดิน หรือกดปุ่ม',move:'คลิกช่องสีขาว หรือลากตัวไปวาง',aim:TOUCH?'แตะทิศที่จะเล็ง แล้วแตะซ้ำเพื่อยืนยัน':'ชี้หรือลากไปทิศที่จะเล็ง แล้วปล่อย/คลิกเพื่อล็อก',target:'คลิกเป้าหมาย (ตัวละคร หรือหมุด ?)',mimic:'เลือกสัตว์ที่จะปลอมตัวเป็น',idle:'สั่งแล้ว ✓'};
 function placePop(){const pop=document.getElementById('pop');if(!sel||busy||!sel.alive||odrag&&odrag.moved){pop.style.display='none';return}
   const pt=svg.createSVGPoint();pt.x=sel.x;pt.y=sel.y+(sel.topY||-60)-34;const q=pt.matrixTransform(svg.getScreenCTM()),m=document.getElementById('main').getBoundingClientRect();
   pop.style.display='flex';pop.style.left=(q.x-m.left)+'px';pop.style.top=(q.y-m.top)+'px';
-  pop.innerHTML=`<div class="pb"><button data-a="move" class="${mode==='move'?'on':''}">เดิน</button><button data-a="skill" class="sk ${mode==='aim'||mode==='target'?'on':''}" title="${STATS[sel.type].desc}">${SK_TH[sel.type]} <span class="info">ⓘ</span></button><button data-a="hold">รอ</button></div><div class="ph">${mode==='idle'?(sel.order?'สั่งแล้ว: '+orderText(sel.order)+' ✓ · กด รอ เพื่อยกเลิก':canOrder(sel)?HINT_TH.pick:`สั่งครบ ${limTxt(LIMIT)}แล้ว ตัวนี้จะยืนรอ`):HINT_TH[mode]}</div>`;
-  pop.querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();const a=b.dataset.a;if(a==='move'){if(!canOrder(sel)){limitWarn();return}if(sel.order&&sel.order.type!=='move')sel.order=null;mode='move';draw()}else if(a==='skill')doSkill();else{sel.order=null;mode='idle';draw()}})}
-const EMO={lion:'🦁',rhino:'🦏',owl:'🦉',chameleon:'🦎',turtle:'🐢',mouse:'🐭'};
-const NAMES={lion:'สิงโต',rhino:'แรด',owl:'นกฮูก',chameleon:'คาเมเลียน',turtle:'เต่า',mouse:'หนู'};
-function orderText(o){if(!o)return'<span class="dim">รอ</span>';return{move:'เดิน',overwatch:'เฝ้ายิง',charge:'พุ่งชน',ambush:'ซุ่มโจมตี',shield:'หดกระดอง',roar:'คำราม',ping:'สแกน'}[o.type]}
+  pop.innerHTML=`<div class="pb"><button data-a="move" class="${mode==='move'?'on':''}">เดิน</button><button data-a="skill" class="sk ${mode==='aim'||mode==='target'||mode==='mimic'?'on':''}" title="${STATS[sel.type].desc}">${SK_TH[sel.type]} <span class="info">ⓘ</span></button><button data-a="hold">รอ</button></div><div class="ph">${mode==='idle'?(sel.order?'สั่งแล้ว: '+orderText(sel.order)+' ✓ · กด รอ เพื่อยกเลิก':canOrder(sel)?HINT_TH.pick:`สั่งครบ ${limTxt(LIMIT)}แล้ว ตัวนี้จะยืนรอ`):HINT_TH[mode]}</div>`+(mode==='mimic'?`<div class="pb mim">${GUISES.map(g=>`<button data-g="${g}" title="${NAMES[g]}" class="${sel.guise===g?'on':''}">${EMO[g]}</button>`).join('')}${sel.guise?'<button data-g="parrot" title="เลิกปลอมตัว">✕</button>':''}</div>`:'');
+  pop.querySelectorAll('button[data-g]').forEach(b=>b.onclick=e=>{e.stopPropagation();setOrder(sel,{type:'mimic',as:b.dataset.g});mode='idle';draw()});
+  pop.querySelectorAll('button[data-a]').forEach(b=>b.onclick=e=>{e.stopPropagation();const a=b.dataset.a;if(a==='move'){if(!canOrder(sel)){limitWarn();return}if(sel.order&&sel.order.type!=='move')sel.order=null;mode='move';draw()}else if(a==='skill')doSkill();else{sel.order=null;mode='idle';draw()}})}
+const EMO={lion:'🦁',rhino:'🦏',owl:'🦉',chameleon:'🦎',turtle:'🐢',mouse:'🐭',monkey:'🐒',frog:'🐸',parrot:'🦜'};
+const NAMES={lion:'สิงโต',rhino:'แรด',owl:'นกฮูก',chameleon:'คาเมเลียน',turtle:'เต่า',mouse:'หนู',monkey:'ลิง',frog:'กบ',parrot:'นกแก้ว'};
+function orderText(o){if(!o)return'<span class="dim">รอ</span>';return{move:'เดิน',overwatch:'เฝ้ายิง',charge:'พุ่งชน',ambush:'ซุ่มโจมตี',shield:'หดกระดอง',roar:'คำราม',ping:'สแกน',swap:'สลับที่',tongue:'ตวัดลิ้น',mimic:o.as==='parrot'?'เลิกปลอมตัว':'ปลอมเป็น'+(NAMES[o.as]||'')}[o.type]}
 function renderPanel(){const el=document.getElementById('units');
+  if(NET.mp&&NET.spec){el.innerHTML=TEAMS.map(t=>`<div class="ur ${alive(t).length?'':'dead'}" style="--team:${TEAMC[t]}"><div class="ue">🦁</div><b style="color:${TEAMC[t]}">ฝูง${TEAMN[t]}</b><span class="hp">${esc(SEATS[t].name)}${SEATS[t].human?'':' 🤖'}</span><span class="ord">${alive(t).length?alive(t).length+' ตัว · '+hpOf(t)+' ♥':'ตกรอบ'}</span></div>`).join('')+'<div class="me-tag" style="--team:#8a93a8">👁 โหมดผู้ชม<em>เห็นทั้งสนาม</em><small>รอบ '+round+(MAXR<99?'/'+MAXR:'')+'</small></div>';
+    $('actions').innerHTML=busy?'<div class="dim">กำลังเฉลยผล…</div>':'<div class="dim">ผู้เล่นกำลังวางแผน…</div>';$('round').textContent=`รอบ ${round}${MAXR<99?' / '+MAXR:''}`;const b=$('resolve');b.textContent='👁 กำลังดูเกม';b.disabled=true;b.classList.remove('locked','isready');return}
   el.innerHTML=units.filter(U=>U.t===ME).map(U=>`<div class="ur ${U===sel?'sel':''} ${U.alive?'':'dead'} ${U.order?'done':''} ${U.type==='lion'?'boss':''} ${U.type==='lion'&&U.hp<=2&&U.alive?'danger':''}" data-id="${U.id}" style="--team:${TEAMC[ME]}"><div class="ue">${EMO[U.type]}</div><b>${NAMES[U.type]}</b><span class="hp">${'♥'.repeat(Math.max(0,U.hp))}<i>${'♥'.repeat(Math.max(0,STATS[U.type].hp-U.hp))}</i></span><span class="ord">${U.alive?(U.order?'✓ '+orderText(U.order):'รอ'):'ล้ม'}</span></div>`).join('')+`<div class="me-tag" style="--team:${TEAMC[ME]}">ฝูง${TEAMN[ME]}<em>ปกป้อง 🦁 ห้ามล้ม!</em><small>${TUT?'สอนเล่น '+(TUT.i+1)+'/'+TSTEPS.length:'รอบ '+round+(MAXR<99?'/'+MAXR:'')}</small></div>`;
   el.querySelectorAll('.ur').forEach(d=>d.onclick=()=>{const U=units.find(u=>u.id===d.dataset.id);if(U.alive&&!busy){select(U);panTo(U.r,U.c,Math.max(1.8,FULL.w/cam.w))}});
   const a=document.getElementById('actions');
@@ -750,24 +832,42 @@ function renderPanel(){const el=document.getElementById('units');
 function log(s,cls=''){const l=document.getElementById('log');const d=document.createElement('div');d.className=cls;d.innerHTML=s;l.prepend(d)}
 function float(U,text,col){if(!isAlly(U)&&U.outer.style.display==='none')return;const t=mk('text',{x:U.x,y:U.y+(U.topY||-60)-14,'text-anchor':'middle','font-size':24,'font-weight':700,fill:col,stroke:'#0f121b','stroke-width':3,'paint-order':'stroke',class:'fl'});t.textContent=text;gF.appendChild(t);setTimeout(()=>t.remove(),1300)}
 
+/* ---------- fruit in the middle of the arena (cfg items) ---------- */
+let fruits=[];
+const fruitAt=(r,c)=>fruits.find(f=>f.r===r&&f.c===c);
+function drawFruits(){gFr.innerHTML='';for(const f of fruits){const[x,y]=P(f.r,f.c);gFr.appendChild(mk('ellipse',{cx:x,cy:y,rx:PROJ==='iso'?22:20,ry:PROJ==='iso'?11:20,fill:'#ffd84d','fill-opacity':.28,stroke:'#ffd84d','stroke-width':2,'stroke-dasharray':'4 3',class:'fruitring'}));const t=mk('text',{x,y:y+8,'text-anchor':'middle','font-size':24,class:'fruit'});t.textContent='🍎';gFr.appendChild(t)}}
+function spawnFruit(n){const R=rng(SEED+round*7919),cand=[];for(let r=3;r<=8;r++)for(let c=3;c<=8;c++)if(!ROCK.has(K(r,c))&&!unitAt(r,c)&&!fruitAt(r,c))cand.push([r,c]);
+  let made=0;for(let i=0;i<n&&cand.length&&fruits.length<5;i++){const[q]=cand.splice(Math.floor(R()*cand.length),1);fruits.push({r:q[0],c:q[1]});made++}
+  if(made){drawFruits();toast('🍎 <b>ผลไม้เกิดกลางสนาม</b> <span class="dim">เดินไปยืนทับ = ฟื้น 1 ♥</span>','scan');log('🍎 ผลไม้เกิดกลางสนาม')}}
+function eatFruits(){if(!fruits.length)return;for(const U of alive()){const f=fruitAt(U.r,U.c);if(!f)continue;fruits.splice(fruits.indexOf(f),1);const full=U.hp>=STATS[U.type].hp;if(!full){U.hp++;hpDraw(U)}
+    if(seenBy(U)||GOD()){float(U,full?'🍎':'🍎 +1 ♥','#7dff9a');toast(`${tn(U)} <span class="dim">กินผลไม้</span> ${full?'<span class="dim">(เลือดเต็มอยู่แล้ว)</span>':'<b style="color:#7dff9a">+1 ♥</b>'}`,'scan')}else toast('🍎 <span class="dim">ผลไม้ถูกใครบางคนกินไปแล้ว</span>','miss');log(`${tn(U)} กินผลไม้`)}drawFruits()}
+/* ---------- emotes ---------- */
+const EMOTES=['😂','😡','😱','👍','🙏','😎','💀','❤️'];
+function showEmote(seat,e){if(FAST||!EMOTES[e])return;const L=units.find(U=>U.t===seat&&U.type==='lion');toast(`<i style="color:${TEAMC[seat]}">ฝูง${TEAMN[seat]}</i> <span class="emoT">${EMOTES[e]}</span>`,'emo');beep(1400,.05,.03);
+  if(L&&(L.alive||L.dying)&&L.outer.style.display!=='none'){const t=mk('text',{x:L.x,y:L.y+(L.topY||-60)-34,'text-anchor':'middle','font-size':44,class:'emoF'});t.textContent=EMOTES[e];gF.appendChild(t);setTimeout(()=>t.remove(),2000)}}
+let emoAt=0;
+function sendEmote(e){const now=performance.now();if(now-emoAt<1200)return;emoAt=now;$('emoPop').style.display='none';if(NET.mp){if(!NET.spec)NET.send({t:'emote',e})}else if(ME>=0)showEmote(ME,e)}
 /* ---------- AI ---------- */
 function freeTile(r,c){return inB(r,c)&&!ROCK.has(K(r,c))&&!unitAt(r,c)}
 function nearestFoe(U){let b=null,bd=99;alive().forEach(V=>{if(foe(U,V)){const d=cheb(U.r,U.c,V.r,V.c);if(d<bd){bd=d;b=V}}});return[b,bd]}
 function walk(U,target){let opts=reachT(U.r,U.c,STATS[U.type].mv).filter(([a,b])=>freeTile(a,b));const safe=opts.filter(([a,b])=>!inLava(a,b,round+1));if(safe.length)opts=safe;if(!opts.length||Math.random()<.15)return null;
   const[tr,tc]=target||[MID,MID];opts.sort((p,q)=>(cheb(p[0],p[1],tr,tc)+Math.random()*2.5)-(cheb(q[0],q[1],tr,tc)+Math.random()*2.5));return{type:'move',r:opts[0][0],c:opts[0][1]}}
-function ai(U){if(U.dummy)return null;const[f,d]=nearestFoe(U);if(!f)return null;const R=Math.random();
+function ai(U){if(U.dummy)return null;if(fruits.length&&U.hp<STATS[U.type].hp){const mv=STATS[U.type].mv,f=fruits.find(f=>cheb(f.r,f.c,U.r,U.c)<=mv&&freeTile(f.r,f.c));if(f&&Math.random()<.7)return{type:'move',r:f.r,c:f.c}}const[f,d]=nearestFoe(U);if(!f)return null;const R=Math.random();
   switch(U.type){
   case'owl':return d<=8&&R<.65?(()=>{const dd=dirTo(U,f.r,f.c,8);return{type:'overwatch',dr:dd[0],dc:dd[1]}})():walk(U);
   case'rhino':{const al=alive().find(V=>foe(U,V)&&(V.r===U.r||V.c===U.c)&&cheb(U.r,U.c,V.r,V.c)<=4);if(al){const dd=dirTo(U,al.r,al.c,4);return{type:'charge',dr:dd[0],dc:dd[1]}}return walk(U,[f.r,f.c])}
   case'chameleon':return d<=2?{type:'ambush',target:f.id}:walk(U,[f.r,f.c]);
   case'turtle':return R<.35?{type:'shield'}:walk(U);
   case'lion':return d<=1?{type:'roar'}:R<.5?null:walk(U);
-  case'mouse':return R<.3?{type:'ping'}:walk(U)}}
+  case'mouse':return R<.3?{type:'ping'}:walk(U);
+  case'frog':{const al=alive().find(V=>foe(U,V)&&(V.r===U.r||V.c===U.c)&&cheb(U.r,U.c,V.r,V.c)<=4);if(al&&R<.8){const dd=dirTo(U,al.r,al.c,4);if(dd)return{type:'tongue',dr:dd[0],dc:dd[1]}}return walk(U,[f.r,f.c])}
+  case'monkey':return d<=3&&R<.5?{type:'swap',target:f.id}:walk(U,[f.r,f.c]);
+  case'parrot':return!U.guise&&R<.7?{type:'mimic',as:'lion'}:walk(U)}}
 
 /* ---------- action areas / feedback ---------- */
 const ring8=U=>[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]].map(([a,b])=>[U.r+a,U.c+b]).filter(([a,b])=>inB(a,b));
 function areaOf(U,o){if(!o)return[];switch(o.type){
-  case'move':return[[o.r,o.c]];case'overwatch':return lane(U.r,U.c,o.dr,o.dc,8);case'charge':return lane(U.r,U.c,o.dr,o.dc,4);
+  case'move':return[[o.r,o.c]];case'overwatch':return lane(U.r,U.c,o.dr,o.dc,8);case'charge':case'tongue':return lane(U.r,U.c,o.dr,o.dc,4);case'swap':{const T=units.find(V=>V.id===o.target);return T&&T.alive?[[T.r,T.c]]:[]}
   case'roar':return ring8(U);case'shield':return[[U.r,U.c],...ring8(U)];
   case'ambush':{const T=units.find(V=>V.id===o.target);return T&&T.alive?[[T.r,T.c]]:[]}case'ping':return[]}return[]}
 const visTiles=(U,t)=>seenBy(U)?t:t.filter(([a,b])=>VIS.has(K(a,b)));
@@ -776,35 +876,35 @@ function waveFx(U,R=6,col='#ffe08a'){const[x,y]=P(U.r,U.c),pl=mk('polygon',{poin
 function fxArea(tiles,col,op,ms,cls='fxa'){const g=mk('g',{class:cls});tiles.forEach(([a,b])=>{const[x,y]=P(a,b);g.appendChild(mk('polygon',{points:dia(x,y,.88),fill:col,'fill-opacity':op,stroke:col,'stroke-width':2.5,'stroke-opacity':.95}))});gFx.appendChild(g);if(ms)setTimeout(()=>g.remove(),ms);return g}
 function panToFit(cells,zmax=2){if(!cells.length)return Promise.resolve();const pts=cells.map(([a,b])=>P(a,b)),xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
   const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),z=Math.max(1,Math.min(zmax,FULL.w/(x1-x0+380),FULL.h/(y1-y0+320)));
-  const w=FULL.w/z,h=FULL.h/z,t={x:(x0+x1)/2-w/2,y:(y0+y1)/2-h/2-30,w,h},a={...cam},t0=performance.now();if(document.hidden){Object.assign(cam,t);applyCam();return Promise.resolve()}
+  const w=FULL.w/z,h=FULL.h/z,t={x:(x0+x1)/2-w/2,y:(y0+y1)/2-h/2-30,w,h},a={...cam},t0=performance.now();if(HID()){Object.assign(cam,t);applyCam();return Promise.resolve()}
   return new Promise(res=>{(function f(t1){const p=Math.min(1,(t1-t0)/450),e=1-Math.pow(1-p,3);for(const k in t)cam[k]=a[k]+(t[k]-a[k])*e;applyCam();p<1?requestAnimationFrame(f):res()})(t0)})}
-function toast(html,cls=''){const f=document.getElementById('feed'),d=document.createElement('div');d.className='toast '+cls;d.innerHTML=html;f.prepend(d);
+function toast(html,cls=''){if(FAST)return;const f=document.getElementById('feed'),d=document.createElement('div');d.className='toast '+cls;d.innerHTML=html;f.prepend(d);
   setTimeout(()=>d.classList.add('out'),3200);setTimeout(()=>d.remove(),3700);while(f.children.length>5)f.lastChild.remove()}
 let SOUND=true,actx=null;
-function beep(f=660,d=.12,v=.08){if(!SOUND)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;o.type='square';g.gain.value=v;g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+d)}catch(e){}}
+function beep(f=660,d=.12,v=.08){if(!SOUND||FAST)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;o.type='square';g.gain.value=v;g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+d)}catch(e){}}
 
 /* ---------- resolution ---------- */
-function panTo(r,c,z=1.8,ms=450){const[x,y]=P(r,c),w=FULL.w/z,h=FULL.h/z,t={x:x-w/2,y:y-h/2-30,w,h},a={...cam},t0=performance.now();if(document.hidden){Object.assign(cam,t);applyCam();return Promise.resolve()}
+function panTo(r,c,z=1.8,ms=450){const[x,y]=P(r,c),w=FULL.w/z,h=FULL.h/z,t={x:x-w/2,y:y-h/2-30,w,h},a={...cam},t0=performance.now();if(HID()){Object.assign(cam,t);applyCam();return Promise.resolve()}
   return new Promise(res=>{(function f(t1){const p=Math.min(1,(t1-t0)/ms),e=1-Math.pow(1-p,3);for(const k in t)cam[k]=a[k]+(t[k]-a[k])*e;applyCam();p<1?requestAnimationFrame(f):res()})(t0)})}
-async function banner(text,ms=1100){if(document.hidden)return;const b=document.getElementById('banner');b.textContent=text;b.classList.remove('show');void b.offsetWidth;b.classList.add('show');await sleep(ms)}
+async function banner(text,ms=1100){if(HID())return;const b=document.getElementById('banner');b.textContent=text;b.classList.remove('show');void b.offsetWidth;b.classList.add('show');await sleep(ms)}
 const seenBy=(...us)=>us.some(U=>U&&(U.t===ME||U.outer.style.display!=='none'));
 const center=us=>{const a=us.length?us:alive(ME).length?alive(ME):alive();return[a.reduce((s,U)=>s+U.r,0)/a.length,a.reduce((s,U)=>s+U.c,0)/a.length]};
-function tween(U,r,c,ms){const[x0,y0]=[U.x,U.y],[x1,y1]=UP(r,c),t0=performance.now();face(U,sdx(U.r,U.c,r,c));U.r=r;U.c=c;resort();if(document.hidden){setPos(U,x1,y1);return Promise.resolve()}
+function tween(U,r,c,ms){const[x0,y0]=[U.x,U.y],[x1,y1]=UP(r,c),t0=performance.now();face(U,sdx(U.r,U.c,r,c));U.r=r;U.c=c;resort();if(HID()){setPos(U,x1,y1);return Promise.resolve()}
   return new Promise(res=>{(function f(t){const p=Math.min(1,(t-t0)/ms),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;setPos(U,x0+(x1-x0)*e,y0+(y1-y0)*e);p<1?requestAnimationFrame(f):res()})(t0)})}
-const tn=U=>`<i style="color:${TEAMC[U.t]}">${TEAMN[U.t]} ${NAMES[U.type]}</i>`;
+const tn=U=>`<i style="color:${TEAMC[U.t]}">${TEAMN[U.t]} ${NAMES[vt(U)]}</i>`;
 function damage(V,n,src){if(!V.alive)return;if(shields.has(V.id)&&n>0){n--;float(V,'โล่กัน','#6fd8ff');if(seenBy(V,src))toast(`${tn(V)} หดกระดองกันไว้ 1`,'shield')}
-  if(n<=0)return;V.hp-=n;hpDraw(V);V.outer.classList.add('hitflash');setTimeout(()=>V.outer.classList.remove('hitflash'),600);beep(220,.18,.06);
-  if(V.t===ME||src.t===ME||seenBy(V,src))toast(`${tn(src)} <span class="dim">${{owl:'ยิง',rhino:'พุ่งชน',chameleon:'ซุ่มกัด',lion:'ตะปบ'}[src.type]||'โจมตี'}</span> ${tn(V)} <b class="dmg">−${n}</b>`,V.t===ME?'hurt':'hit');
+  if(n<=0)return;if(V.guise){const was=tn(V);V.guise=null;setLook(V);if(seenBy(V)||V.t===ME){float(V,'ตัวปลอม!','#ffd84d');toast(`🦜 ${was} <span class="dim">ความแตก — ที่แท้คือ</span> <b>นกแก้วปลอมตัว!</b>`,'scan')}}V.hp-=n;hpDraw(V);V.outer.classList.add('hitflash');setTimeout(()=>V.outer.classList.remove('hitflash'),600);beep(220,.18,.06);
+  if(V.t===ME||src.t===ME||seenBy(V,src))toast(`${tn(src)} <span class="dim">${{owl:'ยิง',rhino:'พุ่งชน',chameleon:'ซุ่มกัด',lion:'ตะปบ',frog:'ตวัดลิ้นใส่'}[src.type]||'โจมตี'}</span> ${tn(V)} <b class="dmg">−${n}</b>`,V.t===ME?'hurt':'hit');
   if(V.t===ME&&!seenBy(src))toast(`⚠ ${NAMES[V.type]}ของคุณโดนโจมตีจากในหมอก!`,'warn');float(V,'-'+n,'#ff6b6b');V.rig.play('hit');log(`${tn(src)} โจมตี ${tn(V)} −${n}`);stats[src.t].dmg+=n;src.dmg=(src.dmg||0)+n;
   if(V.hp>0&&V.type==='lion'&&V.t===ME)toast(`⚠ สิงโตของคุณเหลือ ${V.hp} ♥ — ถ้าล้ม ทั้งฝูงตกรอบ!`,'warn');
   if(V.hp<=0)kill(V,src)}
-function kill(V,src){V.alive=false;V.dying=true;V.rig.play('ko');log(`${tn(V)} ล้ม`,'ko');toast(`${tn(V)} <b>ล้ม!</b>`,'ko');if(src){stats[src.t].kills++;src.kills=(src.kills||0)+1}setTimeout(()=>{V.dying=false;V.outer.style.display='none'},1500);delete known[V.id];
+function kill(V,src){V.alive=false;V.dying=true;V.rig.play('ko');log(`${tn(V)} ล้ม`,'ko');toast(`${tn(V)} <b>ล้ม!</b>`,'ko');if(src){stats[src.t].kills++;src.kills=(src.kills||0)+1;if(!FAST&&!TUT&&!STORY&&SEATS[src.t]&&!SEATS[src.t].human&&Math.random()<.5){const st=src.t;setTimeout(()=>showEmote(st,[0,5,6][Math.random()*3|0]),700)}}setTimeout(()=>{V.dying=false;V.outer.style.display='none'},1500);delete known[V.id];
   if(V.type==='lion'){units.filter(U=>U.t===V.t&&U.alive).forEach(U=>{U.alive=false;U.dying=true;U.rig.play('ko');setTimeout(()=>{U.dying=false;U.outer.style.display='none'},1500)});log(`<b>ฝูง${TEAMN[V.t]} ตกรอบ</b>`,'ko');elim.push(V.t);elimRound[V.t]=round;toast(`👑 สิงโตฝูง${TEAMN[V.t]} ล้ม — <b>ฝูง${TEAMN[V.t]} ตกรอบ!</b>`,'ko');banner(V.t===ME?'สิงโตของคุณล้ม — ฝูงคุณตกรอบ':`ฝูง${TEAMN[V.t]} ตกรอบ!`,1500)}}
 async function push(V,dr,dc){const r=V.r+dr,c=V.c+dc;if(freeTile(r,c))await tween(V,r,c,300)}
 function botOrders(t){const c=alive(t).map(U=>({U,o:U.script||ai(U)})).filter(x=>x.o);c.sort((a,b)=>(a.o.type==='move')-(b.o.type==='move')+Math.random()-.5);
   const o={};c.slice(0,LIMIT).forEach(x=>o[x.U.id]=x.o);return o}
-const stateHash=()=>units.map(U=>`${U.id}:${U.r},${U.c},${U.hp},${U.alive?1:0}`).join('|');
-const PHASES=['① ทุกตัวเดิน','🛡🦁 โล่ · คำราม','🦏 พุ่งชน','🦉 เฝ้ายิง','🦎 ซุ่มโจมตี','🐭 สแกน'];
+const stateHash=()=>units.map(U=>`${U.id}:${U.r},${U.c},${U.hp},${U.alive?1:0}`).join('|')+'#'+fruits.map(f=>f.r+','+f.c).join(';')+'#'+units.map(U=>U.guise||'').join(',');
+const PHASES=['① เดิน','🐒 สลับที่','🛡🦁🦜 โล่·คำราม·ปลอมตัว','🦏 พุ่งชน','🐸 ตวัดลิ้น','🦉 เฝ้ายิง','🦎 ซุ่มโจมตี','🐭 สแกน'];
 function showPhases(on){const b=$('phaseBar');if(!b)return;b.style.display=on&&!STORY?'flex':'none';if(on)b.innerHTML=PHASES.map((p,i)=>`<span data-i="${i}">${p}</span>`).join('<i>›</i>')}
 function setPhase(i){const b=$('phaseBar');if(!b)return;b.querySelectorAll('span').forEach(e=>e.classList.toggle('on',+e.dataset.i===i));b.querySelectorAll('span').forEach(e=>e.classList.toggle('done',+e.dataset.i<i))}
 async function resolve(net){if(busy||over)return;RUNGEN=GEN;if(TUT&&!net&&!tutReadyOK())return tutNudge();if(NET.mp&&!net)return toggleReady();stopTimer();NET.ready=false;busy=true;sel=null;mode='idle';hoverEnemy=null;draw();
@@ -824,7 +924,7 @@ async function resolve(net){if(busy||over)return;RUNGEN=GEN;if(TUT&&!net&&!tutRe
   mv.forEach(U=>U.rig.play('move'));if([...bumped].some(U=>seenBy(U)))toast('💥 <b>ชนกัน!</b> <span class="dim">เดินเข้าช่องเดียวกัน/สลับที่กัน → ทั้งคู่เด้งกลับที่เดิม</span>','hit');
   bumped.forEach(U=>{U.rig.play('hit');if(U.t===ME){float(U,'ชนกัน!','#ffe08a');log(`${tn(U)} ชนกัน อยู่ที่เดิม`)}});
   await Promise.all(mv.map(U=>tween(U,...dest[U.id],600)));
-  mvFx.forEach(g=>g&&g.remove());refreshView();await sleep(300);
+  mvFx.forEach(g=>g&&g.remove());eatFruits();refreshView();await sleep(300);
   /* ② ACT */
   const act=alive().filter(U=>U.order&&U.order.type!=='move');
   /* reveal: every visible action's affected tiles, colored by team */
@@ -833,21 +933,40 @@ async function resolve(net){if(busy||over)return;RUNGEN=GEN;if(TUT&&!net&&!tutRe
   reveal.forEach(g=>g.classList.add('dimfx'));
   const show=async(U,T)=>{const area=visTiles(U,areaOf(U,U.order)),vis=seenBy(U,T)||area.length>0;if(!vis)return false;
     await panToFit([...(seenBy(U)?[[U.r,U.c]]:[]),...(T&&seenBy(T)?[[T.r,T.c]]:[]),...area],2);fxArea(area,TEAMC[U.t],.45,1800,'fxa strong');return true};
+  const bySeat=(a,b)=>a.t-b.t||(a.id<b.id?-1:1);
+  /* monkeys: swap places (before any attack lands) */
   setPhase(1);
+  for(const U of act.filter(U=>U.order.type==='swap').sort(bySeat)){if(!U.alive)continue;const T=units.find(V=>V.id===U.order.target);
+    if(T&&T.alive&&T!==U&&cheb(T.r,T.c,U.r,U.c)<=3){const vis=await show(U,T);U.rig.play('skill');await sleep(vis?450:20);const a=[U.r,U.c],b=[T.r,T.c];await Promise.all([tween(U,...b,380),tween(T,...a,380)]);
+      if(vis)toast(`${tn(U)} <span class="dim">สลับที่กับ</span> ${tn(T)}`,'scan');log(`${tn(U)} สลับที่กับ ${tn(T)}`);eatFruits();refreshView();if(vis)await sleep(600)}
+    else if(U.t===ME){await show(U);U.rig.play('skill');await sleep(700);float(U,'ไกลเกิน','#d8b4ff');toast(`${tn(U)} <span class="dim">สลับที่ไม่ได้ — เป้าหมายอยู่ไกลเกิน 3 ช่อง</span>`,'miss')}}
+  setPhase(2);
+  /* parrots: put on / take off a disguise (only allies are told) */
+  for(const U of act.filter(U=>U.order.type==='mimic')){const as=U.order.as;U.guise=GUISES.includes(as)?as:null;
+    if(isAlly(U)||GOD()){await show(U);U.rig.play('skill');toast(`${tn(U)} <span class="dim">${U.guise?'ปลอมตัวเป็น':'เลิกปลอมตัว'}</span> ${U.guise?'<b>'+NAMES[U.guise]+'</b> <span class="dim">ในสายตาศัตรู</span>':''}`,'scan');await sleep(700)}}
+  refreshView();
   for(const U of act.filter(U=>U.order.type==='shield'||U.order.type==='roar')){const vis=await show(U);U.rig.play('skill');
     if(U.order.type==='shield'){alive(U.t).forEach(A=>{if(cheb(A.r,A.c,U.r,U.c)<=1)shields.add(A.id)});if(vis)toast(`${tn(U)} <span class="dim">หดกระดอง กันดาเมจให้พวกรอบตัว</span>`,'shield')}
     else{let n=0;for(const V of alive())if(foe(U,V)&&cheb(V.r,V.c,U.r,U.c)===1){n++;damage(V,1,U);if(V.alive)push(V,Math.sign(V.r-U.r),Math.sign(V.c-U.c));log(`${tn(U)} คำรามผลัก ${tn(V)}`)}if(vis)toast(`${tn(U)} <span class="dim">คำราม</span> ${n?'ผลักศัตรู '+n+' ตัว':'แต่ไม่มีใครอยู่ใกล้'}`)}
     if(vis)await sleep(700)}
   /* rhinos: physical, so one at a time — the one closest to what it hits goes first (then seat order) */
-  setPhase(2);
+  setPhase(3);
   const chDist=U=>{let p=[U.r,U.c];for(let i=0;i<4;i++){const a=p[0]+U.order.dr,b=p[1]+U.order.dc;if(!inB(a,b)||ROCK.has(K(a,b))||unitAt(a,b))return i;p=[a,b]}return 4};
   for(const U of act.filter(U=>U.order.type==='charge').sort((a,b)=>chDist(a)-chDist(b)||a.t-b.t)){if(!U.alive)continue;let pos=[U.r,U.c],hit=null;
     for(let i=0;i<4;i++){const a=pos[0]+U.order.dr,b=pos[1]+U.order.dc;if(!inB(a,b)||ROCK.has(K(a,b)))break;const V=unitAt(a,b);if(V){hit=V;break}pos=[a,b]}
     const vis=await show(U,hit);U.rig.play('skill');await tween(U,...pos,450);
     if(hit&&foe(U,hit)){damage(hit,2,U);await push(hit,U.order.dr,U.order.dc)}else{if(U.t===ME)log(`${tn(U)} พุ่งไปไม่โดนใคร`);if(vis)toast(`${tn(U)} <span class="dim">พุ่งชนแต่ไม่โดนใคร</span>`,'miss')}
     refreshView();if(vis)await sleep(600)}
+  /* frogs: tongue grabs the first animal in the lane and drags it 2 tiles closer */
+  setPhase(4);
+  for(const U of act.filter(U=>U.order.type==='tongue').sort(bySeat)){if(!U.alive)continue;const o=U.order;let hit=null;for(const[a,b]of lane(U.r,U.c,o.dr,o.dc,4)){const V=unitAt(a,b);if(V){hit=V;break}}
+    const vis=await show(U,hit);face(U,sdx(U.r,U.c,U.r+o.dr,U.c+o.dc));U.rig.play('skill');await sleep(vis?520:20);
+    if(hit){let q=[hit.r,hit.c];for(let i=0;i<2;i++){const a=q[0]-o.dr,b=q[1]-o.dc;if(!freeTile(a,b))break;q=[a,b]}
+      if(q[0]!==hit.r||q[1]!==hit.c)await tween(hit,...q,300);if(foe(U,hit))damage(hit,1,U);else if(vis)toast(`${tn(U)} <span class="dim">ตวัดลิ้นดึง</span> ${tn(hit)} <span class="dim">เข้ามา</span>`,'scan');log(`${tn(U)} ดึง ${tn(hit)}`);eatFruits();refreshView()}
+    else{if(U.t===ME)log(`${tn(U)} ตวัดลิ้นไม่โดนใคร`);if(vis)toast(`${tn(U)} <span class="dim">ตวัดลิ้นแต่ไม่โดนใคร</span>`,'miss')}
+    if(vis)await sleep(600)}
   /* owls: everybody fires at the same instant — targets are locked first, damage lands together */
-  setPhase(3);
+  setPhase(5);
   const shots=act.filter(U=>U.order.type==='overwatch'&&U.alive).map(U=>{const o=U.order;let tgt=null;for(const[a,b]of lane(U.r,U.c,o.dr,o.dc,8)){const V=unitAt(a,b);if(V&&foe(U,V)){tgt=V;break}}return{U,tgt}});
   if(shots.length){const visS=shots.filter(x=>seenBy(x.U,x.tgt)||visTiles(x.U,areaOf(x.U,x.U.order)).length);
     if(visS.length){await panToFit(visS.flatMap(x=>[[x.U.r,x.U.c],...(x.tgt?[[x.tgt.r,x.tgt.c]]:[]),...visTiles(x.U,areaOf(x.U,x.U.order))]),1.8);visS.forEach(x=>fxArea(visTiles(x.U,areaOf(x.U,x.U.order)),TEAMC[x.U.t],.45,1800,'fxa strong'))}
@@ -857,7 +976,7 @@ async function resolve(net){if(busy||over)return;RUNGEN=GEN;if(TUT&&!net&&!tutRe
     if(mutual.length&&mutual.some(x=>seenBy(x.U)))toast('🦉⚔🦉 <b>ยิงใส่กันพร้อมกัน — โดนทั้งคู่!</b>','hit');
     if(visS.length)await sleep(700)}
   /* chameleons: also simultaneous — valid strikes are decided before anyone moves */
-  setPhase(4);
+  setPhase(6);
   const taken=new Set();const amb=[];
   for(const U of act.filter(U=>U.order.type==='ambush'&&U.alive)){const T=units.find(V=>V.id===U.order.target);
     if(T&&T.alive&&cheb(T.r,T.c,U.r,U.c)<=2){const adj=reachT(T.r,T.c,1).filter(([a,b])=>(freeTile(a,b)||(a===U.r&&b===U.c))&&!taken.has(K(a,b))).sort((p,q)=>cheb(p[0],p[1],U.r,U.c)-cheb(q[0],q[1],U.r,U.c));
@@ -866,18 +985,19 @@ async function resolve(net){if(busy||over)return;RUNGEN=GEN;if(TUT&&!net&&!tutRe
   if(amb.length){const visA=amb.filter(x=>seenBy(x.U,x.T));if(visA.length)await panToFit(visA.flatMap(x=>[[x.U.r,x.U.c],[x.T.r,x.T.c]]),2);
     amb.forEach(x=>x.U.rig.play('skill'));await sleep(visA.length?600:30);await Promise.all(amb.map(x=>x.to?tween(x.U,...x.to,300):0));
     amb.forEach(x=>face(x.U,sdx(x.U.r,x.U.c,x.T.r,x.T.c)));await sleep(visA.length?500:30);amb.forEach(x=>damage(x.T,2,x.U));refreshView();if(visA.length)await sleep(700)}
-  setPhase(5);
+  setPhase(7);
   for(const U of act.filter(U=>U.order.type==='ping')){if(!U.alive||!isAlly(U))continue;
     await panToFit([[U.r,U.c],[U.r-4,U.c-4],[U.r+4,U.c+4]].filter(([a,b])=>inB(a,b)),1.6);U.rig.play('skill');waveFx(U,6);await sleep(650);
     const found=alive().filter(V=>!isAlly(V)&&cheb(V.r,V.c,U.r,U.c)<=6);found.forEach(V=>pinged.add(V.id));refreshView();
     found.forEach(V=>{fxArea([[V.r,V.c]],'#ffe08a',.55,1400,'fxa strong');float(V,'พบ!','#ffe08a')});
     toast(found.length?`${tn(U)} <span class="dim">สแกนเจอ</span> ${found.map(tn).join(', ')}`:`${tn(U)} <span class="dim">สแกนแล้ว ไม่พบศัตรู</span>`,'scan');await sleep(700)}
-  reveal.forEach(g=>g.remove());
+  reveal.forEach(g=>g.remove());eatFruits();
   if(pinged.size)log(`สแกนเจอศัตรู ${pinged.size} ตัว`);
   await sleep(400);
   if(!TUT){const burn=alive().filter(U=>inLava(U.r,U.c));if(burn.length){if(burn.some(U=>U.t===ME||seenBy(U)))await panToFit(burn.filter(U=>U.t===ME||seenBy(U)).map(U=>[U.r,U.c]),1.6);
     for(const V of burn){V.hp-=1;hpDraw(V);V.outer.classList.add('hitflash');setTimeout(()=>V.outer.classList.remove('hitflash'),600);float(V,'-1','#ff7a3a');if(V.t===ME||seenBy(V))toast(`${tn(V)} <span class="dim">โดนไฟป่า</span> <b class="dmg">−1</b>`,'hurt');if(V.hp<=0)kill(V,null)}await sleep(700)}}
   showPhases(false);
+  if(ITEMS!=='off'&&!TUT&&!STORY&&round%(ITEMS==='many'?2:3)===0)spawnFruit(ITEMS==='many'?2:1);
   units.forEach(U=>U.order=null);round++;
   refreshView();busy=false;
   if(TUT){draw();return tutCheck()}
@@ -896,7 +1016,7 @@ $v('vBtn').onclick=()=>setProj(PROJ==='iso'?'top':'iso');
 $v('pvBtn').onclick=()=>{PVMODE=PVMODE==='always'?'hold':'always';$v('pvBtn').textContent=PVMODE==='always'?'ภาพจำลอง: แสดงตลอด':'ภาพจำลอง: กดค้าง Space';draw()};document.getElementById('cMine').onclick=()=>panTo(...center(alive(ME)),1.8);
 
 /* ---------- draft ---------- */
-const pick={rhino:1,owl:1,chameleon:1,turtle:0,mouse:0};const NEED=()=>TEAM_SZ-1;
+const pick={rhino:1,owl:1,chameleon:1,turtle:0,mouse:0,monkey:0,frog:0,parrot:0};const NEED=()=>TEAM_SZ-1;
 function renderDraft(){fitPicks();$('needN').textContent=NEED();$('dupT').textContent=DUP>=9?'ซ้ำได้ไม่จำกัด':'ซ้ำได้ไม่เกิน '+DUP;const tot=Object.values(pick).reduce((a,b)=>a+b,0);
   document.getElementById('cards').innerHTML=POOL.map(t=>`<div class="card"><svg viewBox="-110 -125 220 140" data-team="${ME}" style="--team:${TEAMC[ME]}" id="pv-${t}"></svg><b>${NAMES[t]}</b><div class="dim small"><b style="color:#ffd84d">${SK_TH[t]}</b> — ${STATS[t].desc}</div><div class="dim small">พลังชีวิต ${STATS[t].hp} · เดิน ${STATS[t].mv} · มองเห็น ${STATS[t].vis}</div><div class="cnt"><button data-t="${t}" data-d="-1">−</button><span>${pick[t]}</span><button data-t="${t}" data-d="1">+</button></div></div>`).join('');
   document.querySelectorAll('.cnt button').forEach(b=>b.onclick=()=>{const t=b.dataset.t,d=+b.dataset.d,n=pick[t]+d;if(n<0||n>DUP||(d>0&&tot>=NEED()))return;pick[t]=n;renderDraft()});
@@ -921,20 +1041,31 @@ function profModal(after){profAfter=after||null;const m=$('prof');m.style.displa
     m.style.display='none';chips();if(NET.code)NET.send({t:'profile',name:n,av});const f=profAfter;profAfter=null;if(f)f()}}
 
 /* ================= NETWORK (lockstep: same orders -> same resolve on every client) ================= */
+const TOK=(()=>{let t=null;try{t=localStorage.getItem('wa-tok')}catch(e){}if(!t){t=Array.from({length:24},()=>'abcdefghijklmnopqrstuvwxyz0123456789'[Math.random()*36|0]).join('');try{localStorage.setItem('wa-tok',t)}catch(e){}}return t})();
 const PENDING_ROOM=new URLSearchParams(location.search).get('room');
 const NET={ws:null,id:null,code:null,lan:null,seat:0,isHost:false,mp:false,ready:false,readyN:0,humanN:1,players:[],lastOrders:'',myPicked:false,botSent:0,
   can(){return location.protocol==='http:'||location.protocol==='https:'},
-  send(m){if(this.ws&&this.ws.readyState===1)this.ws.send(JSON.stringify(m))},
+  send(m){if(this.mute||(this.spec&&['orders','ready','done','bot','emote'].includes(m.t)))return;if(this.ws&&this.ws.readyState===1)this.ws.send(JSON.stringify(m))},
   async enter(msg){if(!hasProfile&&!localStorage.getItem('wa-profile'))return profModal(()=>this.enter(msg));const name=PROFILE.name,av=PROFILE.av;$('lobErr').textContent='';
     if(msg.t==='join'&&!(msg.code||'').trim()){$('lobErr').textContent='กรอกรหัสห้องก่อน';return}
     try{await this.connect()}catch(e){$('lobErr').textContent='ต่อ server ไม่ได้ — รัน npm start อยู่หรือเปล่า?';return}
-    this.send({...msg,name,av})},
+    this.send({...msg,name,av,tok:TOK})},
   connect(){if(this.ws&&this.ws.readyState===1)return Promise.resolve();return new Promise((res,rej)=>{const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
     this.ws=ws;ws.onopen=()=>res();ws.onerror=()=>rej();ws.onmessage=e=>{try{this.on(JSON.parse(e.data))}catch(err){console.error(err)}};
-    ws.onclose=()=>{const was=this.code;this.ws=null;this.code=null;this.chat=[];if(this.kicked){this.kicked=false;showLobby();$('lobErr').textContent='คุณถูกเชิญออกจากห้อง';return}if(was&&this.mp&&!over){$('waitMsg').innerHTML='หลุดการเชื่อมต่อกับ server<br><button onclick="NET.leave();showTitle();this.parentNode.style.display=\'none\'">กลับเมนู</button>';$('waitMsg').style.display='block';toast('หลุดจาก server แล้ว','warn');this.mp=false;stopTimer()}}})},
-  leave(){this.code=null;this.mp=false;this.myPicked=false;this.chat=[];if(this.ws){const w=this.ws;this.ws=null;w.onclose=null;w.close()}},
+    ws.onclose=()=>{const was=this.code||this.lost,spec=this.spec;this.ws=null;this.code=null;this.chat=[];if(this.kicked){this.kicked=false;showLobby();$('lobErr').textContent='คุณถูกเชิญออกจากห้อง';return}if(was&&this.mp&&!over){stopTimer();if(spec){this.mp=false;this.spec=false;showTitle();toast('หลุดจากห้องที่ดูอยู่','warn');return}if(!this.lost){this.lost=was;this.rc=0;toast('หลุดจาก server — กำลังต่อกลับ…','warn')}this.retry()}}})},
+  retry(){if(!this.lost)return;clearTimeout(this.rcT);if(++this.rc>15)return this.giveUp();const w=$('waitMsg');w.innerHTML=`หลุดการเชื่อมต่อ — กำลังต่อกลับเข้าเกม… (${this.rc}/15)<br><span class="dim small">ฝูงของคุณมีบอทเล่นแทนชั่วคราว</span><br><button id="rcQuit">กลับเมนู</button>`;w.style.display='block';$('rcQuit').onclick=()=>{w.style.display='none';this.leave();showTitle()};
+    this.rcT=setTimeout(()=>{const code=this.lost;this.connect().then(()=>this.send({t:'rejoin',code,tok:TOK})).catch(()=>this.retry())},this.rc===1?700:2500)},
+  giveUp(){clearTimeout(this.rcT);this.lost=null;this.mp=false;try{localStorage.removeItem('wa-last')}catch(e){}const w=$('waitMsg');w.innerHTML='กลับเข้าเกมไม่ได้แล้ว <span class="dim">(เกมจบหรือห้องปิดไปแล้ว)</span><br><button id="rcQuit">กลับเมนู</button>';w.style.display='block';$('rcQuit').onclick=()=>{w.style.display='none';this.leave();showTitle()}},
+  /* catch up after a rejoin / when spectating: replay every resolved round instantly (same deterministic resolve) */
+  async onSync(m){clearTimeout(this.rcT);this.lost=null;this.rc=0;$('waitMsg').style.display='none';this.spec=!!m.spec;if(!m.spec){const me=this.players.find(p=>p.id===this.id);if(me){this.seat=me.seat;this.isHost=me.host}}
+    startMatchMP(m.seats,m.cfg,m.seed,true);const live=m.phase==='resolve',H=m.history||[];FAST=true;this.mute=true;
+    try{for(let i=0;i<H.length&&!over;i++){round=i+1;this.planRound=i+1;if(i===H.length-1&&live)this.mute=false;await runResolveMP(H[i])}}finally{FAST=false;this.mute=false}
+    if(over)return;refreshView();draw();{const[cr,cc]=center(alive(ME));focus(cr,cc,m.spec?1.1:1.5)}
+    if(m.phase==='plan')planMP(m.round,m.secs);else if(live){$('waitMsg').textContent='รอผู้เล่นอื่นดูผลรอบนี้ให้จบ…';$('waitMsg').style.display='block'}
+    if(m.spec)banner('👁 โหมดผู้ชม — เห็นทั้งสนาม',1500);else{banner('กลับเข้าเกมแล้ว!',1300);flagMine()}},
+  leave(){clearTimeout(this.rcT);this.lost=null;this.spec=false;this.mute=false;try{localStorage.removeItem('wa-last')}catch(e){}this.code=null;this.mp=false;this.myPicked=false;this.chat=[];if(this.ws){const w=this.ws;this.ws=null;w.onclose=null;w.close()}},
   on(m){switch(m.t){
-    case'hello':this.id=m.id;this.code=m.code;this.lan=m.lan;history.replaceState(null,'',location.pathname+'?room='+m.code);break;
+    case'hello':this.id=m.id;this.code=m.code;this.spec=!!m.spec;if(m.spec)break;this.lan=m.lan;history.replaceState(null,'',location.pathname+'?room='+m.code);break;
     case'rooms':renderRoomList(m);break;
     case'chat':this.chat=(this.chat||[]).concat(m).slice(-40);renderChat();if(m.id!==this.id)beep(1200,.04,.03);break;
     case'kicked':this.kicked=true;break;
@@ -944,7 +1075,13 @@ const NET={ws:null,id:null,code:null,lan:null,seat:0,isHost:false,mp:false,ready
       if(m.phase==='draft'&&$('draft').style.display==='flex')draftStatus();
       if(this.mp&&this.isHost&&!was&&this.planRound===round&&!busy)this.sendBots();break}
     case'draft':draftMP(m.secs,m.cfg);break;
-    case'start':clearInterval(draftTimer);startMatchMP(m.seats,m.cfg);break;
+    case'start':clearInterval(draftTimer);this.spec=false;startMatchMP(m.seats,m.cfg,m.seed);break;
+    case'sync':this.onSync(m);break;
+    case'norejoin':if(this.lost)this.giveUp();else{try{localStorage.removeItem('wa-last')}catch(e){}}break;
+    case'note':toast(esc(m.text),'scan');break;
+    case'emote':showEmote(m.seat,m.e);break;
+    case'roomGone':if(this.spec){this.leave();showTitle();toast('ห้องที่ดูอยู่ปิดไปแล้ว','warn')}break;
+    case'seatBack':if(SEATS[m.seat]){SEATS[m.seat].human=true;toast(`${esc(m.name)} กลับเข้าเกมแล้ว — คุมฝูง${TEAMN[m.seat]}ต่อ`,'scan')}break;
     case'plan':planMP(m.round,m.secs);break;
     case'readyState':this.readyN=m.ready.length;this.humanN=m.humans.length;this.ready=m.ready.includes(ME);renderPanel();break;
     case'resolve':this.mp&&runResolveMP(m.orders);break;
@@ -954,10 +1091,11 @@ const NET={ws:null,id:null,code:null,lan:null,seat:0,isHost:false,mp:false,ready
 function renderRoomList(m){const el=$('roomList');if(!el)return;const rs=m.rooms||[];
   $('onStat').innerHTML=`<span class="dot" style="background:#5ad17a"></span>ออนไลน์ <b>${m.online||0}</b> คน · ห้อง <b>${m.total||0}</b>`;
   const open=rs.filter(r=>!r.playing),play=rs.filter(r=>r.playing);
-  el.innerHTML=(open.length?open.map(r=>`<div class="rl"><div class="rl-main"><b>${esc(r.name)}</b><span class="dim small">${r.code} · ${r.mode==='team'?'ทีม 2v2':'ตัวใครตัวมัน'} · ฝูงละ ${r.team} ตัว · สั่ง ${limTxt(r.limit)}/รอบ · ${r.rounds?r.rounds+' รอบ':'∞ รอบ'}</span></div>
+  el.innerHTML=(open.length?open.map(r=>`<div class="rl"><div class="rl-main"><b>${esc(r.name)}</b><span class="dim small">${r.code} · ${r.mode==='team'?'ทีม 2v2':'ตัวใครตัวมัน'} · ฝูงละ ${r.team} ตัว · สั่ง ${limTxt(r.limit)}/รอบ · ${r.rounds?r.rounds+' รอบ':'∞ รอบ'}${r.map&&MAPS[r.map]?' · '+MAPS[r.map].n:''}</span></div>
      <div class="rl-avs">${r.avs.map(a=>`<span>${a}</span>`).join('')}${'<span class="empty">·</span>'.repeat(Math.max(0,r.size-r.avs.length))}</div><span class="rl-n">${r.players}/${r.size}</span><button data-c="${r.code}" class="big">เข้าร่วม</button></div>`).join('')
      :'<div class="rl-empty">ยังไม่มีห้องเปิดรอ — กด <b>เข้าเล่นด่วน</b> หรือ <b>สร้างห้อง</b> แล้วชวนเพื่อนได้เลย</div>')+
-   (play.length?'<div class="rl-h">กำลังเล่นอยู่</div>'+play.map(r=>`<div class="rl playing"><div class="rl-main"><b>${esc(r.name)}</b><span class="dim small">${r.mode==='team'?'ทีม 2v2':'ตัวใครตัวมัน'} · รอบ ${r.round}</span></div><div class="rl-avs">${r.avs.map(a=>`<span>${a}</span>`).join('')}</div><span class="rl-n">🎮</span></div>`).join(''):'');
+   (play.length?'<div class="rl-h">กำลังเล่นอยู่</div>'+play.map(r=>`<div class="rl playing"><div class="rl-main"><b>${esc(r.name)}</b><span class="dim small">${r.mode==='team'?'ทีม 2v2':'ตัวใครตัวมัน'} · รอบ ${r.round}</span></div><div class="rl-avs">${r.avs.map(a=>`<span>${a}</span>`).join('')}</div><span class="rl-n">🎮</span>${r.watch?`<button data-w="${r.code}">👁 ดู</button>`:''}</div>`).join(''):'');
+  el.querySelectorAll('button[data-w]').forEach(b=>b.onclick=()=>NET.enter({t:'watch',code:b.dataset.w}));
   el.querySelectorAll('button[data-c]').forEach(b=>b.onclick=()=>NET.enter({t:'join',code:b.dataset.c}))}
 function renderChat(){const el=$('chatLog');if(!el)return;el.innerHTML=(NET.chat||[]).map(c=>c.sys?`<div class="cs">${esc(c.text)}</div>`:`<div><span class="av">${c.av||''}</span><b style="color:${TEAMC[c.seat]||'#fff'}">${esc(c.name)}</b> ${esc(c.text)}</div>`).join('');el.scrollTop=el.scrollHeight}
 let listTimer=null;
@@ -978,20 +1116,21 @@ function renderRoom(){$('room').textContent=NET.code;const rn=$('roomName');if(d
   const humans=NET.players.length,sz=(NET.cfg&&NET.cfg.size)||4;$('lobHint').textContent=`ผู้เล่น ${humans}/${sz}`+(sz>humans?` · ที่นั่งว่าง ${sz-humans} ที่จะเป็นบอท`:'')+' · ทุกคนกดพร้อม → ไปจัดฝูงพร้อมกัน'}
 function ruleSplash(ms=3800){const r=$('ruleSplash');r.classList.remove('show');void r.offsetWidth;r.classList.add('show');clearTimeout(r._t);r._t=setTimeout(()=>r.classList.remove('show'),ms);r.onclick=()=>r.classList.remove('show')}
 function flagMine(){alive(ME).forEach(U=>{const f=mk('text',{class:'meflag','text-anchor':'middle',y:(U.topY||-50)-30,style:`fill:${TEAMC[ME]}`});f.textContent='▼';U.outer.appendChild(f);setTimeout(()=>f.remove(),6000)})}
-function startMatchMP(seats,cfg){resetMatch();applyCfg(cfg||{});NET.planRound=0;NET.mp=true;NET.spectate=false;SEATS=seats;TEAMS=seats.map((st,i)=>st.active===false?-1:i).filter(i=>i>=0);ME=NET.seat;VIEW=(4-ME)%4;buildBoard();
+function startMatchMP(seats,cfg,seed,quiet){resetMatch();applyCfg(cfg||{});SEED=seed||1;setMap(MAPK,SEED);NET.planRound=0;NET.mp=true;NET.spectate=!!NET.spec;document.body.classList.toggle('spec',!!NET.spec);SEATS=seats;TEAMS=seats.map((st,i)=>st.active===false?-1:i).filter(i=>i>=0);ME=NET.spec?-1:NET.seat;VIEW=NET.spec?0:(4-ME)%4;buildBoard();
+  try{if(NET.spec)localStorage.removeItem('wa-last');else localStorage.setItem('wa-last',NET.code||'')}catch(e){}
   TEAMS.forEach(t=>spawnTeam(t,['lion',...seats[t].picks]));screen(null);previews=[];
-  units.forEach(U=>{if(!isAlly(U))known[U.id]={r:U.r,c:U.c,round:1}});const[cr,cc]=center(alive(ME));focus(cr,cc,1.5);refreshView();draw();
+  units.forEach(U=>{if(!isAlly(U))known[U.id]={r:U.r,c:U.c,round:1}});const[cr,cc]=center(alive(ME));focus(cr,cc,NET.spec?1.1:1.5);if(ITEMS!=='off')spawnFruit(1);refreshView();draw();if(NET.spec){log('👁 โหมดผู้ชม — เห็นทั้งสนาม');return}if(quiet)return;
   log(`เล่นออนไลน์: คุณคือ <b style="color:${TEAMC[ME]}">ฝูง${TEAMN[ME]}</b> · สั่งได้รอบละ ${limTxt(LIMIT)} แล้วกด <b>พร้อมแล้ว</b> — เฉลยผลเมื่อทุกคนพร้อมหรือหมดเวลา`);banner(`คุณคือฝูง${TEAMN[ME]} (วงแหวนสว่างใต้ตัว)`,1600);flagMine();ruleSplash()}
 function planMP(r,secs){if(over)return;$('waitMsg').style.display='none';round=r;NET.planRound=r;NET.ready=false;NET.lastOrders='';units.forEach(U=>{if(U.t!==ME)U.order=null});startTimer(secs);draw();
-  if(NET.isHost)NET.sendBots()}
+  if(NET.isHost&&!NET.spec)NET.sendBots()}
 function sendOrders(){if(!NET.mp||busy||NET.planRound!==round)return;const o={};alive(ME).forEach(U=>{if(U.order)o[U.id]=U.order});const j=JSON.stringify(o);if(j===NET.lastOrders)return;NET.lastOrders=j;NET.send({t:'orders',round,orders:o})}
-function toggleReady(){if(busy||NET.planRound!==round)return;NET.lastOrders='';sendOrders();NET.ready=!NET.ready;NET.send({t:'ready',round,ready:NET.ready});renderPanel()}
+function toggleReady(){if(busy||NET.spec||NET.planRound!==round)return;NET.lastOrders='';sendOrders();NET.ready=!NET.ready;NET.send({t:'ready',round,ready:NET.ready});renderPanel()}
 function runResolveMP(orders){units.forEach(U=>U.order=null);for(const t in orders)for(const id in orders[t]){const U=units.find(u=>u.id===id&&u.alive&&u.t===+t);if(U)U.order=orders[t][id]}
-  NET.ready=false;resolve(true)}
+  NET.ready=false;return resolve(true)}
 
 /* ---------- story intro (~25s): why the lion matters ---------- */
-async function playStory(){resetMatch();STORY=true;document.body.classList.add('storymode');storySkip=false;busy=true;MODE='ffa';ME=0;TEAMS=[0,1,2,3];LIMIT=9;
-  if(VIEW){VIEW=0;buildBoard()}screen(null);$('side').style.display='none';$('cam').style.display='none';$('story').style.display='block';
+async function playStory(){resetMatch();STORY=true;document.body.classList.add('storymode');storySkip=false;busy=true;MODE='ffa';ME=0;NET.spec=false;TEAMS=[0,1,2,3];LIMIT=9;ITEMS='off';
+  if(VIEW||CURMAP!=='classic'){VIEW=0;setMap('classic');buildBoard()}screen(null);$('side').style.display='none';$('cam').style.display='none';$('story').style.display='block';
   $('storySkip').onclick=()=>{storySkip=true};
   const w=async ms=>{if(storySkip)throw'skip';await sleep(ms);if(storySkip)throw'skip'};
   const cap=async(t,ms)=>{const c=$('storyCap');c.innerHTML=t;c.classList.remove('in');void c.offsetWidth;c.classList.add('in');await w(ms)};
@@ -1020,9 +1159,10 @@ async function playStory(){resetMatch();STORY=true;document.body.classList.add('
   STORY=false;busy=false;document.body.classList.remove('storymode');$('feed').innerHTML='';$('story').style.display='none';startTut(0)}
 
 /* ---------- match settings ---------- */
-function applyCfg(c){LIMIT=c.limit||2;MAXR=c.rounds?c.rounds:Infinity;MODE=c.mode==='team'?'team':'ffa';TEAM_SZ=c.team||4;DUP=c.dup||2}
+function applyCfg(c){MAPK=MAPS[c.map]?c.map:'classic';ITEMS=c.items||'few';LIMIT=c.limit||2;MAXR=c.rounds?c.rounds:Infinity;MODE=c.mode==='team'?'team':'ffa';TEAM_SZ=c.team||4;DUP=c.dup||2}
 const CFG_ROWS=[['size','จำนวนฝูง',[[2,'2'],[3,'3'],[4,'4']]],['mode','โหมด',[['ffa','ตัวใครตัวมัน'],['team','ทีม 2v2']]],['team','สัตว์ต่อฝูง',[[3,'3'],[4,'4'],[5,'5'],[6,'6']]],
-  ['dup','ซ้ำได้สูงสุด',[[1,'1'],[2,'2'],[3,'3'],[9,'ไม่จำกัด']]],['limit','สั่งได้ต่อรอบ',[[1,'1 ตัว'],[2,'2 ตัว'],[3,'3 ตัว'],[9,'ทุกตัว']]],['rounds','จำนวนรอบ',[[5,'5'],[8,'8'],[12,'12'],[20,'20'],[0,'∞ จนเหลือฝูงเดียว']]]];
+  ['dup','ซ้ำได้สูงสุด',[[1,'1'],[2,'2'],[3,'3'],[9,'ไม่จำกัด']]],['limit','สั่งได้ต่อรอบ',[[1,'1 ตัว'],[2,'2 ตัว'],[3,'3 ตัว'],[9,'ทุกตัว']]],['rounds','จำนวนรอบ',[[5,'5'],[8,'8'],[12,'12'],[20,'20'],[0,'∞ จนเหลือฝูงเดียว']]],
+  ['map','แผนที่',Object.keys(MAPS).map(k=>[k,MAPS[k].n])],['items','🍎 ผลไม้กลางสนาม',[['off','ไม่มี'],['few','น้อย'],['many','เยอะ']]]];
 function normCfg(c,k,v){c[k]=v;if(k==='mode'&&v==='team')c.size=4;if(k==='size'&&v!==4&&c.mode==='team')c.mode='ffa';return c}
 function renderCfg(el,c,editable,onSet,extra){el.innerHTML=CFG_ROWS.map(([k,l,opts])=>`<div class="cfgrow"><span>${l}</span><div class="opts">${opts.map(([v,t])=>`<button class="cf ${c[k]===v?'on':''}" data-k="${k}" data-v="${v}" ${editable?'':'disabled'}>${t}</button>`).join('')}</div></div>`).join('')+(extra||'');
   el.querySelectorAll('.cf').forEach(b=>b.onclick=()=>{const k=b.dataset.k,raw=b.dataset.v,v=isNaN(+raw)?raw:+raw;onSet(k,v)})}
@@ -1032,20 +1172,20 @@ let TUT=null,MAXR=8,PLAN_T=40,timerId=null,tLeft=0,elim=[],elimRound={},stats={0
 const $=id=>document.getElementById(id);
 function screen(id){['title','lobby','draft','end'].forEach(x=>$(x).style.display=x===id?'flex':'none');$('side').style.display=id?'none':'flex';$('cam').style.display=id?'none':'flex'}
 function resetMatch(){GEN++;RUNGEN=GEN;if(typeof gGuide!=='undefined'){gGuide.innerHTML='';GUIDE=null}units.forEach(U=>{U.outer.remove();U.ghost&&U.ghost.remove();U.pv&&U.pv.remove()});for(let i=objs.length-1;i>=0;i--)if(objs[i].U||objs[i].G)objs.splice(i,1);
-  units=[];known={};pinged=new Set();round=1;over=false;busy=false;sel=null;mode='idle';hoverEnemy=null;elim=[];elimRound={};
+  units=[];fruits=[];gFr.innerHTML='';known={};pinged=new Set();round=1;over=false;busy=false;sel=null;mode='idle';hoverEnemy=null;elim=[];elimRound={};
   for(let t=0;t<4;t++)stats[t]={dmg:0,kills:0};$('log').innerHTML='';gZ.innerHTML='';gF.innerHTML='';stopTimer();TUT=null;$('tut').style.display='none';$('pop').style.display='none'}
 function spawnTeam(t,team){let s=SLOTS.map(p=>p);for(let i=0;i<t;i++)s=s.map(rot);team.forEach((ty,i)=>makeUnit(t,ty,...s[i],i))}
-function startMatch(){resetMatch();NET.mp=false;applyCfg(SOLO_CFG);ME=0;SEATS=[{name:'คุณ',human:true},{name:'บอท',human:false},{name:'บอท',human:false},{name:'บอท',human:false}];if(VIEW){VIEW=0;buildBoard()}const red=['lion',...POOL.flatMap(t=>Array(pick[t]).fill(t))];
+function startMatch(){resetMatch();NET.mp=false;applyCfg(SOLO_CFG);ME=0;SEATS=[{name:'คุณ',human:true},{name:'บอท',human:false},{name:'บอท',human:false},{name:'บอท',human:false}];VIEW=0;SEED=(Math.random()*2147483647)|0;setMap(MAPK,SEED);buildBoard();const red=['lion',...POOL.flatMap(t=>Array(pick[t]).fill(t))];
   TEAMS=SEAT_ORDER.slice(0,SOLO_CFG.size).sort();SEATS.forEach((st,t)=>st.active=TEAMS.includes(t));
   spawnTeam(0,red);TEAMS.forEach(t=>{if(t)spawnTeam(t,['lion',...randomPicks()])});
   screen(null);previews=[];units.forEach(U=>{if(!isAlly(U))known[U.id]={r:U.r,c:U.c,round:1}});
-  {const[cr,cc]=center(alive(ME));focus(cr,cc,1.6)}flagMine();ruleSplash();refreshView();log(`แต่ละรอบเลือกสั่งได้ <b>${limTxt(LIMIT)}</b> ที่เหลือยืนรอ แล้วกด <b>พร้อมแล้ว</b> — ถ้าทุกคนพร้อมก่อนหมดเวลาก็เฉลยผลทันที`);draw();banner('รอบ 1 · วางแผนได้เลย',1200);startTimer()}
+  {const[cr,cc]=center(alive(ME));focus(cr,cc,1.6)}flagMine();ruleSplash();if(ITEMS!=='off')spawnFruit(1);refreshView();log(`แต่ละรอบเลือกสั่งได้ <b>${limTxt(LIMIT)}</b> ที่เหลือยืนรอ แล้วกด <b>พร้อมแล้ว</b> — ถ้าทุกคนพร้อมก่อนหมดเวลาก็เฉลยผลทันที`);draw();banner('รอบ 1 · วางแผนได้เลย',1200);startTimer()}
 /* timer */
 function startTimer(secs){stopTimer();if(TUT||over)return;tLeft=secs||PLAN_T;document.getElementById('bigtimer').style.display='flex';tickT();timerId=setInterval(()=>{tLeft--;tickT();if(tLeft<=0){stopTimer();if(!NET.mp)resolve()}},1000)}
 function stopTimer(){clearInterval(timerId);timerId=null;$('timer').textContent='';const b=document.getElementById('bigtimer');if(b)b.style.display='none'}
 function tickT(){$('timer').textContent=`⏱ ${tLeft}`;$('timer').classList.toggle('low',tLeft<=10);
   const b=$('bigtimer');b.querySelector('.bt-n').textContent=tLeft;b.querySelector('i').style.width=(tLeft/PLAN_T*100)+'%';b.classList.toggle('warn',tLeft<=10);b.classList.toggle('crit',tLeft<=5);
-  const n=nOrdered(),need=Math.min(LIMIT,alive(ME).length);b.querySelector('.bt-s').textContent=n<need?`รอบนี้สั่งได้อีก ${need-n} ตัว`:'สั่งครบแล้ว · กด พร้อมแล้ว ได้เลย';
+  const n=nOrdered(),need=Math.min(LIMIT,alive(ME).length);b.querySelector('.bt-s').textContent=NET.mp&&NET.spec?'ผู้เล่นกำลังวางแผน':n<need?`รอบนี้สั่งได้อีก ${need-n} ตัว`:'สั่งครบแล้ว · กด พร้อมแล้ว ได้เลย';
   if(tLeft===10){banner('เหลือ 10 วินาที!',1000);beep(660,.15)}
   if(tLeft<=5&&tLeft>0){const c=$('count');c.textContent=tLeft;c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');beep(880,.08)}
   if(tLeft===0){banner('หมดเวลา! เฉลยผล',1000);beep(440,.3)}}
@@ -1053,9 +1193,10 @@ function tickT(){$('timer').textContent=`⏱ ${tLeft}`;$('timer').classList.togg
 const hpOf=t=>alive(t).reduce((a,U)=>a+U.hp,0);
 function endMatch(){stopTimer();const aHp=a=>TEAMS.filter(t=>allyOf(t)===a).reduce((x,t)=>x+hpOf(t),0);const live=TEAMS.filter(t=>!elim.includes(t)).sort((a,b)=>MODE==='team'?(aHp(allyOf(b))-aHp(allyOf(a)))||(hpOf(b)-hpOf(a)):hpOf(b)-hpOf(a)),order=[...live,...elim.slice().reverse()],rank=order.indexOf(ME)+1;
   const mvp=units.filter(U=>U.t===ME).sort((a,b)=>((b.dmg||0)+3*(b.kills||0))-((a.dmg||0)+3*(a.kills||0)))[0];
-  $('endTitle').textContent=MODE==='team'?(allyOf(order[0])===allyOf(ME)?'ทีมคุณชนะ! 🏆':'ทีมคุณแพ้'):rank===1?'ชนะ! ฝูงคุณครองป่า':`จบเกม · อันดับ ${rank}`;
+  $('endTitle').textContent=ME<0?'จบเกม':MODE==='team'?(allyOf(order[0])===allyOf(ME)?'ทีมคุณชนะ! 🏆':'ทีมคุณแพ้'):rank===1?'ชนะ! ฝูงคุณครองป่า':`จบเกม · อันดับ ${rank}`;
   $('endRows').innerHTML=order.map((t,i)=>`<tr class="${t===ME?'me':''}"><td>#${i+1}</td><td><span class="dot" style="background:${TEAMC[t]}"></span>ฝูง${TEAMN[t]} · ${SEATS[t].name}${t===ME?' (คุณ)':SEATS[t].human?'':' (บอท)'}${MODE==='team'?' <span class="tmtag">ทีม '+(allyOf(t)+1)+'</span>':''}</td><td>${stats[t].dmg}</td><td>${stats[t].kills}</td><td>${elim.includes(t)?'ตกรอบรอบ '+elimRound[t]:'รอด '+alive(t).length+' ตัว'}</td></tr>`).join('');
   $('mvp').innerHTML=mvp?`<svg viewBox="-110 -125 220 140" data-team="${ME}" style="--team:${TEAMC[ME]}" id="mvpsvg"></svg><div><div class="dim small">MVP ของฝูงคุณ</div><b style="font-size:18px">${NAMES[mvp.type]}</b><div class="dim small">ดาเมจ ${mvp.dmg||0} · กำจัด ${mvp.kills||0}</div></div>`:'';
+  const wasMP=NET.mp,wasSpec=NET.spec;try{localStorage.removeItem('wa-last')}catch(e){}NET.mp=false;if(wasSpec)NET.leave();$('again').textContent=wasSpec?'กลับล็อบบี้':wasMP?'🔁 เล่นอีกรอบ (ห้องเดิม)':'🔁 เล่นอีกรอบ';$('again2').style.display=wasMP||wasSpec?'none':'';
   screen('end');previews=mvp?[{rig:new Rig(UNITS[mvp.type],$('mvpsvg'))}]:[];if(previews[0])previews[0].rig.play('skill')}
 /* title + lobby */
 function showTitle(){resetMatch();screen('title');chips();const sv=$('tsvg');sv.innerHTML='';previews=[0,1,2,3].map(t=>{const g=mk('g',{transform:`translate(${-225+t*150},0) scale(.9)`,'data-team':t,style:`--team:${TEAMC[t]}`});sv.appendChild(g);const r=new Rig(UNITS[['lion','owl','rhino','chameleon'][t]],g);r.el=t*400;return{rig:r}})}
@@ -1078,6 +1219,7 @@ function showDraft(){screen('draft');renderDraft();const mp=!!NET.code;$('start'
 $('tPlay').onclick=showLobby;$('tTut').onclick=()=>playStory();$('lobBack0').onclick=showTitle;$('soloBtn').onclick=()=>{NET.mp=false;applyCfg(SOLO_CFG);showDraft()};
 $('lobBack').onclick=()=>{NET.leave();showLobby()};$('readyBtn').onclick=()=>{const me=NET.players.find(p=>p.id===NET.id);NET.send({t:'lready',v:!(me&&me.ready)})};$('lobGo').onclick=()=>NET.send({t:'start'});
 $('mkRoom').onclick=()=>NET.enter({t:'create'});$('quickBtn').onclick=()=>NET.enter({t:'quick'});
+$('emoPop').innerHTML=EMOTES.map((e,i)=>`<button data-e="${i}">${e}</button>`).join('');$('emoPop').querySelectorAll('button').forEach(b=>b.onclick=()=>sendEmote(+b.dataset.e));$('emoBtn').onclick=()=>{const p=$('emoPop');p.style.display=p.style.display==='flex'?'none':'flex'};
 $('exitBtn').onclick=()=>{$('exitTxt').textContent=TUT?'ออกจากสอนเล่น กลับไปหน้าแรก':NET.mp?'ฝูงของคุณจะให้บอทเล่นแทน แล้วคุณจะออกจากห้อง':'เกมนี้จะจบทันที';$('exitM').style.display='flex'};
 $('exitNo').onclick=()=>{$('exitM').style.display='none'};
 $('exitYes').onclick=()=>{$('exitM').style.display='none';clearTimeout(tutTimer);storySkip=true;STORY=false;document.body.classList.remove('storymode');$('story').style.display='none';$('waitMsg').style.display='none';
@@ -1088,7 +1230,7 @@ $('roomName').onchange=()=>NET.send({t:'rname',name:$('roomName').value});
 const sendChat=()=>{const v=$('chatIn').value.trim();if(!v)return;NET.send({t:'chat',text:v});$('chatIn').value=''};$('chatSend').onclick=sendChat;$('chatIn').onkeydown=e=>{if(e.key==='Enter')sendChat()};$('joinBtn').onclick=()=>NET.enter({t:'join',code:$('joinCode').value});
 $('copyInv').onclick=()=>{const u=$('invite').textContent;navigator.clipboard&&navigator.clipboard.writeText(u);$('copyInv').textContent='คัดลอกแล้ว ✓'};
 $('start').onclick=startMatch;$('pickOk').onclick=()=>{NET.send({t:'picks',picks:POOL.flatMap(t=>Array(pick[t]).fill(t))});NET.myPicked=true;draftStatus()};
-$('draftBack').onclick=showLobby;$('again').onclick=()=>NET.code?showLobby():showDraft();$('menu').onclick=()=>{NET.leave();showTitle()};
+$('draftBack').onclick=showLobby;$('again').onclick=()=>{if(NET.code){showLobby();NET.send({t:'lready',v:true})}else if(LTAB==='on'&&$('again').textContent==='กลับล็อบบี้')showLobby();else startMatch()};$('again2').onclick=showDraft;$('menu').onclick=()=>{NET.leave();showTitle()};
 /* tutorial */
 const uOf=t=>units.find(U=>U.t===ME&&U.type===t);
 const dum=()=>units.find(U=>U.dummy);
@@ -1163,7 +1305,7 @@ function guideTick(){if(!GUIDE||!GUIDE.hand||GUIDE.sh.btn)return;const sh=GUIDE.
   if(sh.drag){const a=at(sh.drag[0]),b=P(...sh.drag[1]),p=Math.min(1,Math.max(0,((t%2.2)-.4)/1.2)),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;x=a[0]+(b[0]-a[0])*e;y=a[1]+(b[1]-a[1])*e;GUIDE.hand.setAttribute('opacity',t%2.2>2?String((2.2-t%2.2)*5):'1')}
   else{[x,y]=at(sh.tap);y+=Math.abs(Math.sin(t*4))*-10}
   GUIDE.hand.setAttribute('x',x-12);GUIDE.hand.setAttribute('y',y+36)}
-function startTut(i){clearTimeout(tutTimer);MODE='ffa';setTimeout(()=>{if(TUT&&TUT.i===i&&TSTEPS[i].intro){tutCard({ok:true,intro:true});guideUpdate();tutTimer=setTimeout(()=>{if(TUT&&TUT.i===i)startTut(i+1)},1700)}},6500);resetMatch();TEAMS=[0,1];NET.mp=false;ME=0;if(VIEW){VIEW=0;buildBoard()}TUT={i,goal:TSTEPS[i].goal};TSTEPS[i].setup();screen(null);previews=[];
+function startTut(i){clearTimeout(tutTimer);MODE='ffa';setTimeout(()=>{if(TUT&&TUT.i===i&&TSTEPS[i].intro){tutCard({ok:true,intro:true});guideUpdate();tutTimer=setTimeout(()=>{if(TUT&&TUT.i===i)startTut(i+1)},1700)}},6500);resetMatch();TEAMS=[0,1];NET.mp=false;NET.spec=false;ME=0;ITEMS='off';if(VIEW||CURMAP!=='classic'){VIEW=0;setMap('classic');buildBoard()}TUT={i,goal:TSTEPS[i].goal};TSTEPS[i].setup();screen(null);previews=[];
   units.forEach(U=>{if(!isAlly(U))known[U.id]={r:U.r,c:U.c,round:1}});focus(9,10,2);refreshView();tutCard();draw();banner(`สอนเล่น ${i+1}/${TSTEPS.length} · ${TSTEPS[i].title}`,1200)}
 let tutTimer=null;
 function tutCard(res){const st=TSTEPS[TUT.i],el=$('tut');el.style.display='block';TUT.result=res||null;const last=TUT.i===TSTEPS.length-1;
@@ -1177,6 +1319,7 @@ function tutNudge(){const t=$('tut');t.classList.remove('nudge');void t.offsetWi
 function tutCheck(){const st=TSTEPS[TUT.i],ok=st.check(),i=TUT.i;tutCard({ok,msg:st.fail});guideUpdate();beep(ok?880:300,.15,.06);clearTimeout(tutTimer);
   tutTimer=setTimeout(()=>{if(!TUT||TUT.i!==i)return;if(!ok)return startTut(i);if(i<TSTEPS.length-1)return startTut(i+1);TUT=null;guideUpdate();showLobby()},ok?(i===TSTEPS.length-1?3500:1900):2000)}
 showTitle();if(PENDING_ROOM)showLobby();
+{let lastRoom=null;try{lastRoom=localStorage.getItem('wa-last')}catch(e){}if(lastRoom&&NET.can())NET.connect().then(()=>NET.send({t:'rejoin',code:lastRoom,tok:TOK})).catch(()=>{})}
 let last=performance.now();
 (function loop(t){const dt=Math.min(50,t-last);last=t;units.forEach(U=>{U.rig.tick(dt);if(U.pvRig&&U.pv.style.display!=='none'){pvTick(U,dt);U.pvRig.tick(dt)}});previews.forEach(p=>p.rig.tick(dt));guideTick();requestAnimationFrame(loop)})(last);
 </script></body></html>
