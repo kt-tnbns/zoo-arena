@@ -1,0 +1,16 @@
+{
+  "name": "zoo-arena",
+  "version": "1.0.0",
+  "description": "4-player simultaneous-turn animal tactics on one board, LAN rooms",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "esbuild server.source.js --bundle --platform=node --outfile=server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}
